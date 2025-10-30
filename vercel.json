@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
+    "ANTHROPIC_API_KEY": "@anthropic-api-key",
+    "PINECONE_API_KEY": "@pinecone-api-key",
+    "AGORA_APP_ID": "@agora-app-id"
+  }
+}
