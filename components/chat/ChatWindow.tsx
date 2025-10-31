@@ -74,7 +74,7 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
 
   const handleForward = async (messageId: string) => {
     // TODO: Show channel/conversation selector
-    toast.info('Forward feature coming soon!')
+    toast('Forward feature coming soon!')
   }
 
   const handleReact = async (messageId: string, emoji: string) => {
@@ -92,7 +92,7 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
     setUploading(true)
     try {
       // TODO: Implement file upload to Supabase Storage
-      toast.info('File upload coming soon!')
+      toast('File upload coming soon!')
     } catch (error) {
       toast.error('Failed to upload file')
     } finally {

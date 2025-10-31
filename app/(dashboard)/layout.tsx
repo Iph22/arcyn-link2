@@ -54,11 +54,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navItems = [
     { icon: Home, label: 'Home', href: '/dashboard' },
-    { icon: MessageSquare, label: 'Chat', href: '/dashboard/chat' },
-    { icon: Phone, label: 'Calls', href: '/dashboard/calls' },
-    { icon: Bot, label: 'AI Playground', href: '/dashboard/ai-playground' },
-    { icon: Trophy, label: 'Leaderboard', href: '/dashboard/leaderboard' },
-    { icon: SettingsIcon, label: 'Settings', href: '/dashboard/settings' },
+    { icon: MessageSquare, label: 'Chat', href: '/chat' },
+    { icon: Phone, label: 'Calls', href: '/calls' },
+    { icon: Bot, label: 'AI Playground', href: '/ai-playground' },
+    { icon: Trophy, label: 'Leaderboard', href: '/leaderboard' },
+    { icon: SettingsIcon, label: 'Settings', href: '/settings' },
   ]
 
   return (
@@ -115,7 +115,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
             <div className="flex gap-2">
-              <Link href="/dashboard/profile" className="flex-1">
+              <Link href="/profile" className="flex-1">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
