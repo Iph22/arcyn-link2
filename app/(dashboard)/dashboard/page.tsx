@@ -2,9 +2,28 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { MessageSquare, Phone, Bot, TrendingUp, Users, Flame } from 'lucide-react'
 import { getCurrentUser } from '@/lib/supabase/auth'
 import type { Profile } from '@/lib/supabase/client'
+import { 
+  Trophy, 
+  Users, 
+  MessageSquare, 
+  Bot, 
+  Sparkles,
+  TrendingUp,
+  Award,
+  Flame,
+  Star,
+  Crown,
+  Phone,
+  Video,
+  FileText,
+  Code,
+  Calendar,
+  Bell,
+  Settings,
+  LogOut
+} from 'lucide-react'
 
 export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null)

@@ -24,6 +24,7 @@ export interface Profile {
   branch: 'arcyn_x' | 'modulex' | 'nexalab'
   total_logins: number
   login_streak: number
+  rank_score: number
   last_login: string
   last_seen?: string
   is_online: boolean

@@ -36,8 +36,10 @@ export default function SignUpPage() {
         username: formData.username,
         branch: formData.branch as 'arcyn_x' | 'modulex' | 'nexalab',
       })
-      toast.success('Account created successfully!')
-      router.push('/dashboard')
+      
+      // Redirect to email confirmation page instead of dashboard
+      router.push(`/confirm-email?email=${encodeURIComponent(formData.email)}`)
+      
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account')
     } finally {
@@ -86,9 +88,9 @@ export default function SignUpPage() {
         >
           <div className="w-32 h-32 mx-auto mb-8">
             <img 
-            src="./Logo.png" 
-            alt="Logo"
-            className="w-full h-full object-contain"
+              src="./Logo.png" 
+              alt="Logo"
+              className="w-full h-full object-contain"
             />
           </div>
         </motion.div>
@@ -171,10 +173,12 @@ export default function SignUpPage() {
               type="password"
               placeholder="Password"
               required
+              minLength={6}
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               className="w-full px-4 py-3 bg-black/50 border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-gold-500 placeholder-gray-500 transition-all"
             />
+            <p className="text-xs text-gray-500 mt-1 ml-1">Minimum 6 characters</p>
           </motion.div>
 
           {/* Branch Selection */}
