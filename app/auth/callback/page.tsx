@@ -1,3 +1,6 @@
+// app/auth/callback/page.tsx
+// REPLACE YOUR ENTIRE callback page with this
+
 'use client'
 
 import { useEffect } from 'react'
@@ -12,49 +15,73 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Get session
-        const { data: { session }, error } = await supabase.auth.getSession()
+        console.log('🔄 Processing auth callback...')
         
-        if (error) {
-          console.error('Error during email confirmation:', error)
-          router.push('/signin?error=confirmation_failed')
+        // Get the current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError) {
+          console.error('❌ Session error:', sessionError)
+          router.push('/signin?error=session_failed')
           return
         }
 
-        if (session?.user) {
-          // Check if profile exists
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', session.user.id)
-            .maybeSingle()
+        if (!session?.user) {
+          console.log('⚠️ No session found, redirecting to signin...')
+          router.push('/signin')
+          return
+        }
 
-          // Create profile if it doesn't exist
-          if (!profile) {
-            const username = searchParams.get('username')
-            const fullName = searchParams.get('fullName')
-            const branch = searchParams.get('branch')
+        console.log('✅ Session found for user:', session.user.email)
 
-            await supabase.from('profiles').insert({
-              id: session.user.id,
-              email: session.user.email!,
-              full_name: fullName || session.user.user_metadata?.full_name || 'User',
-              username: username || session.user.user_metadata?.username || `user_${session.user.id.slice(0, 8)}`,
-              branch: (branch as any) || session.user.user_metadata?.branch || 'modulex',
-              total_logins: 1,
-              login_streak: 1,
-              last_login: new Date().toISOString(),
-              is_online: true,
-            })
+        // Check if profile exists
+        const { data: existingProfile, error: fetchError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', session.user.id)
+          .maybeSingle()
+
+        if (fetchError) {
+          console.error('❌ Error checking profile:', fetchError)
+        }
+
+        // Create profile if it doesn't exist
+        if (!existingProfile) {
+          console.log('📝 Creating profile for new user...')
+          
+          const username = searchParams.get('username')
+          const fullName = searchParams.get('fullName')
+          const branch = searchParams.get('branch')
+
+          const { error: createError } = await supabase.from('profiles').insert({
+            id: session.user.id,
+            email: session.user.email!,
+            full_name: fullName || session.user.user_metadata?.full_name || 'User',
+            username: username || session.user.user_metadata?.username || `user_${session.user.id.slice(0, 8)}`,
+            branch: (branch as any) || session.user.user_metadata?.branch || 'modulex',
+            total_logins: 1,
+            login_streak: 1,
+            last_login: new Date().toISOString(),
+            is_online: true,
+          })
+
+          if (createError) {
+            console.error('❌ Profile creation error:', createError)
+            router.push('/signin?error=profile_creation_failed')
+            return
           }
 
-          // Redirect to dashboard
-          router.push('/dashboard')
+          console.log('✅ Profile created successfully!')
         } else {
-          router.push('/signin')
+          console.log('✅ Profile already exists')
         }
+
+        // Success! Redirect to dashboard
+        console.log('🎉 Redirecting to dashboard...')
+        router.push('/dashboard')
+        
       } catch (error) {
-        console.error('Callback error:', error)
+        console.error('💥 Callback error:', error)
         router.push('/signin?error=callback_failed')
       }
     }
@@ -72,10 +99,10 @@ export default function AuthCallbackPage() {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-16 h-16 border-4 border-gold-500 border-t-transparent rounded-full mx-auto mb-4"
+          className="w-16 h-16 border-4 border-ios-blue border-t-transparent rounded-full mx-auto mb-4"
         />
-        <p className="text-gold-500 text-lg font-semibold">Confirming your email...</p>
-        <p className="text-gray-400 text-sm mt-2">Please wait while we set up your account</p>
+        <p className="text-ios-blue text-lg font-semibold">Setting up your account...</p>
+        <p className="text-ios-gray-600 text-sm mt-2">You'll be redirected to your dashboard shortly</p>
       </motion.div>
     </div>
   )

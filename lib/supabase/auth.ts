@@ -1,3 +1,6 @@
+// lib/supabase/auth.ts
+// REPLACE YOUR ENTIRE auth.ts WITH THIS FIXED VERSION
+
 import { supabase } from './client'
 
 export async function signUp({
@@ -30,7 +33,7 @@ export async function signUp({
       throw new Error('Username already taken')
     }
 
-    // Sign up WITHOUT triggers (we'll create profile after email confirmation)
+    // Sign up WITHOUT triggers (profile created in callback)
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -59,30 +62,47 @@ export async function signUp({
 }
 
 export async function signIn({ email, password }: { email: string; password: string }) {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
+  try {
+    console.log('🔐 Signing in:', email)
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
 
-  if (error) throw error
+    if (error) {
+      console.error('❌ Signin error:', error)
+      throw error
+    }
 
-  if (data.user) {
+    if (!data.user) {
+      throw new Error('No user data returned')
+    }
+
+    console.log('✅ Signin successful:', data.user.email)
+
     // Check if profile exists
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', data.user.id)
       .maybeSingle()
 
+    if (profileError) {
+      console.error('❌ Profile fetch error:', profileError)
+      // Don't throw - profile might just not exist yet
+    }
+
     if (!profile) {
-      // Create profile from metadata
-      console.log('Creating profile...')
-      const { error: profileError } = await supabase
+      console.log('⚠️ Profile not found - creating from metadata...')
+      
+      // Create profile from user metadata
+      const { error: createError } = await supabase
         .from('profiles')
         .insert({
           id: data.user.id,
           email: data.user.email!,
-          full_name: data.user.user_metadata?.full_name || 'User',
+          full_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
           username: data.user.user_metadata?.username || `user_${data.user.id.slice(0, 8)}`,
           branch: data.user.user_metadata?.branch || 'modulex',
           total_logins: 1,
@@ -91,11 +111,15 @@ export async function signIn({ email, password }: { email: string; password: str
           is_online: true,
         })
 
-      if (profileError) {
-        console.error('Profile creation error:', profileError)
-        throw new Error('Could not create profile')
+      if (createError) {
+        console.error('❌ Profile creation error:', createError)
+        throw new Error('Could not create profile. Please contact support.')
       }
+
+      console.log('✅ Profile created successfully')
     } else {
+      console.log('✅ Profile found, updating login stats...')
+      
       // Update login stats
       const lastLogin = profile.last_login ? new Date(profile.last_login) : null
       const today = new Date()
@@ -118,6 +142,7 @@ export async function signIn({ email, password }: { email: string; password: str
         })
         .eq('id', data.user.id)
 
+      // Log activity (don't fail if this errors)
       try {
         await supabase.from('activity_log').insert({
           user_id: data.user.id,
@@ -125,12 +150,17 @@ export async function signIn({ email, password }: { email: string; password: str
           points_earned: 10,
         })
       } catch (e) {
-        console.warn('Activity log failed:', e)
+        console.warn('⚠️ Activity log failed:', e)
       }
     }
-  }
 
-  return data
+    console.log('✅ Sign in complete!')
+    return data
+
+  } catch (error: any) {
+    console.error('💥 Signin failed:', error)
+    throw error
+  }
 }
 
 export async function signOut() {
