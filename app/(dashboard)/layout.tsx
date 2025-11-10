@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getCurrentUser } from '@/lib/supabase/auth'
-import { Home, MessageSquare, Phone, Bot, Trophy, User, Settings as SettingsIcon, LogOut } from 'lucide-react'
+import { Home, MessageSquare, Phone, Bot, Trophy, User, Settings as SettingsIcon, LogOut, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase/client'
@@ -57,6 +57,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { icon: MessageSquare, label: 'Chat', href: '/chat' },
     { icon: Phone, label: 'Calls', href: '/calls' },
     { icon: Bot, label: 'AI Playground', href: '/ai-playground' },
+    { icon: FileText, label: 'Research Library', href: '/research-library' },
     { icon: Trophy, label: 'Leaderboard', href: '/leaderboard' },
     { icon: SettingsIcon, label: 'Settings', href: '/settings' },
   ]

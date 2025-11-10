@@ -49,3 +49,8 @@ export interface Message {
   created_at: string
   updated_at?: string
 }
+
+export interface MessageWithSender extends Message {
+  sender?: Profile
+  reactions?: any[]
+}

@@ -7,7 +7,9 @@ import { useChatMessages, sendMessage, unsendMessage, forwardMessage, addReactio
 import MessageBubble from './MessageBubble'
 import EmojiPicker from './EmojiPicker'
 import MessageInfo from './MessageInfo'
+import ForwardMessageModal from './ForwardMessageModal'
 import { getCurrentUser } from '@/lib/supabase/auth'
+import { uploadFile } from '@/lib/storage/fileUpload'
 import toast from 'react-hot-toast'
 
 interface ChatWindowProps {
@@ -22,6 +24,7 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [replyingTo, setReplyingTo] = useState<any>(null)
   const [selectedMessage, setSelectedMessage] = useState<any>(null)
+  const [forwardingMessageId, setForwardingMessageId] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -73,8 +76,7 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
   }
 
   const handleForward = async (messageId: string) => {
-    // TODO: Show channel/conversation selector
-    toast('Forward feature coming soon!')
+    setForwardingMessageId(messageId)
   }
 
   const handleReact = async (messageId: string, emoji: string) => {
@@ -89,12 +91,37 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
     const file = e.target.files?.[0]
     if (!file) return
 
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size must be less than 10MB')
+      return
+    }
+
     setUploading(true)
     try {
-      // TODO: Implement file upload to Supabase Storage
-      toast('File upload coming soon!')
-    } catch (error) {
-      toast.error('Failed to upload file')
+      const uploadedFile = await uploadFile(file, channelId)
+      
+      // Determine message type based on file type
+      let messageType: 'image' | 'video' | 'audio' | 'file' = 'file'
+      if (uploadedFile.type.startsWith('image/')) messageType = 'image'
+      else if (uploadedFile.type.startsWith('video/')) messageType = 'video'
+      else if (uploadedFile.type.startsWith('audio/')) messageType = 'audio'
+      
+      // Send message with file attachment
+      await sendMessage({
+        content: `📎 ${uploadedFile.name}`,
+        channelId,
+        conversationId,
+        messageType,
+        fileUrl: uploadedFile.url,
+      })
+
+      toast.success('File uploaded!')
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to upload file')
     } finally {
       setUploading(false)
     }
@@ -234,7 +261,7 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
-              className="w-full px-4 py-3 bg-black/50 border border-gold-500/20 rounded-2xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white placeholder-gray-500 resize-none max-h-32 transition-all"
+              className="w-full px-4 py-3 bg-black/50 border border-gold-500/20 rounded-2xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-gold-500 placeholder-gray-500 resize-none max-h-32 transition-all"
               rows={1}
             />
           </div>
@@ -261,6 +288,14 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
           />
         )}
       </AnimatePresence>
+
+      {/* Forward Message Modal */}
+      {forwardingMessageId && (
+        <ForwardMessageModal
+          messageId={forwardingMessageId}
+          onClose={() => setForwardingMessageId(null)}
+        />
+      )}
     </div>
   )
 }

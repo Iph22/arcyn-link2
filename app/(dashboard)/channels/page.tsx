@@ -5,12 +5,15 @@ import { motion } from 'framer-motion'
 import { Hash, Users, Plus, Search, Lock, Globe, Settings } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { getCurrentUser } from '@/lib/supabase/auth'
+import CreateChannelModal from '@/components/channels/CreateChannelModal'
+import ChannelSettingsModal from '@/components/channels/ChannelSettingsModal'
 import toast from 'react-hot-toast'
 
 export default function ChannelsPage() {
   const [channels, setChannels] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [selectedChannel, setSelectedChannel] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -178,7 +181,10 @@ export default function ChannelsPage() {
                       {channel.branch.replace('_', '.')}
                     </span>
                   )}
-                  <button className="p-2 hover:bg-gold-500/20 rounded-lg transition-colors">
+                  <button 
+                    onClick={() => setSelectedChannel(channel)}
+                    className="p-2 hover:bg-gold-500/20 rounded-lg transition-colors"
+                  >
                     <Settings className="w-4 h-4 text-gray-400" />
                   </button>
                 </div>
@@ -192,154 +198,15 @@ export default function ChannelsPage() {
       {showCreateModal && (
         <CreateChannelModal onClose={() => setShowCreateModal(false)} onSuccess={loadChannels} />
       )}
+
+      {/* Channel Settings Modal */}
+      {selectedChannel && (
+        <ChannelSettingsModal
+          channel={selectedChannel}
+          onClose={() => setSelectedChannel(null)}
+          onSuccess={loadChannels}
+        />
+      )}
     </div>
-  )
-}
-
-function CreateChannelModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    branch: '',
-    isPrivate: false,
-  })
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      const user = await getCurrentUser()
-      if (!user) return
-
-      // Create channel
-      const { data: channel, error: channelError } = await supabase
-        .from('channels')
-        .insert({
-          name: formData.name,
-          description: formData.description,
-          branch: formData.branch || null,
-          is_private: formData.isPrivate,
-          created_by: user.id,
-        })
-        .select()
-        .single()
-
-      if (channelError) throw channelError
-
-      // Add creator as member
-      const { error: memberError } = await supabase
-        .from('channel_members')
-        .insert({
-          channel_id: channel.id,
-          user_id: user.id,
-          role: 'admin',
-        })
-
-      if (memberError) throw memberError
-
-      toast.success('Channel created successfully!')
-      onSuccess()
-      onClose()
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create channel')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        onClick={(e) => e.stopPropagation()}
-        className="bg-arcyn-surface border border-gold-500/20 rounded-3xl p-8 max-w-md w-full shadow-gold-glow-lg"
-      >
-        <h2 className="text-2xl font-bold text-white mb-6">Create Channel</h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Channel Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Channel Name</label>
-            <input
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="general"
-              className="w-full px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white placeholder-gray-500 transition-all"
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Description (Optional)</label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="What's this channel about?"
-              rows={3}
-              className="w-full px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white placeholder-gray-500 resize-none transition-all"
-            />
-          </div>
-
-          {/* Branch */}
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">Branch (Optional)</label>
-            <select
-              value={formData.branch}
-              onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-              className="w-full px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white transition-all"
-            >
-              <option value="">All Branches</option>
-              <option value="arcyn_x">Arcyn.x</option>
-              <option value="modulex">Modulex</option>
-              <option value="nexalab">Nexalab</option>
-            </select>
-          </div>
-
-          {/* Privacy */}
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="private"
-              checked={formData.isPrivate}
-              onChange={(e) => setFormData({ ...formData, isPrivate: e.target.checked })}
-              className="w-5 h-5 rounded border-gold-500/20 bg-arcyn-bg text-gold-500 focus:ring-2 focus:ring-gold-500/20"
-            />
-            <label htmlFor="private" className="text-sm text-gray-300 cursor-pointer">
-              Make this channel private
-            </label>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl text-gray-400 hover:text-white hover:border-gold-500/40 transition-all"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-gold-500 to-gold-600 text-black font-bold rounded-xl hover:shadow-gold-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Creating...' : 'Create'}
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </motion.div>
   )
 }

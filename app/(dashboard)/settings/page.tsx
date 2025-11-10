@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { User, Bell, Lock, Palette, Globe, Save, Loader2 } from 'lucide-react'
+import { User, Bell, Lock, Palette, Globe, Save, Loader2, MessageSquare, Shield } from 'lucide-react'
 import { getCurrentUser } from '@/lib/supabase/auth'
 import { supabase } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
+import AvatarUpload from '@/components/settings/AvatarUpload'
+import PasswordChange from '@/components/settings/PasswordChange'
+import DeleteAccount from '@/components/settings/DeleteAccount'
 
-type Tab = 'account' | 'notifications' | 'privacy' | 'appearance' | 'language'
+type Tab = 'account' | 'notifications' | 'privacy' | 'appearance' | 'language' | 'security'
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('account')
@@ -20,6 +23,7 @@ export default function SettingsPage() {
     bio: '',
     department: '',
     position: '',
+    statusMessage: '',
     
     // Notifications
     notificationsEnabled: true,
@@ -28,6 +32,12 @@ export default function SettingsPage() {
     messageNotifications: true,
     callNotifications: true,
     mentionNotifications: true,
+    
+    // Privacy
+    profileVisibility: 'everyone',
+    whoCanMessage: 'everyone',
+    showOnlineStatus: true,
+    showReadReceipts: true,
     
     // Appearance
     theme: 'dark',
@@ -53,12 +63,17 @@ export default function SettingsPage() {
         bio: user.bio || '',
         department: user.department || '',
         position: user.position || '',
+        statusMessage: user.status_message || '',
         notificationsEnabled: user.notifications_enabled ?? true,
-        emailNotifications: true,
-        pushNotifications: true,
-        messageNotifications: true,
-        callNotifications: true,
-        mentionNotifications: true,
+        emailNotifications: user.email_notifications ?? true,
+        pushNotifications: user.push_notifications ?? true,
+        messageNotifications: user.message_notifications ?? true,
+        callNotifications: user.call_notifications ?? true,
+        mentionNotifications: user.mention_notifications ?? true,
+        profileVisibility: user.profile_visibility || 'everyone',
+        whoCanMessage: user.who_can_message || 'everyone',
+        showOnlineStatus: user.show_online_status ?? true,
+        showReadReceipts: user.show_read_receipts ?? true,
         theme: user.theme || 'dark',
         language: user.language || 'en',
       })
@@ -83,7 +98,17 @@ export default function SettingsPage() {
           bio: settings.bio,
           department: settings.department,
           position: settings.position,
+          status_message: settings.statusMessage,
           notifications_enabled: settings.notificationsEnabled,
+          email_notifications: settings.emailNotifications,
+          push_notifications: settings.pushNotifications,
+          message_notifications: settings.messageNotifications,
+          call_notifications: settings.callNotifications,
+          mention_notifications: settings.mentionNotifications,
+          profile_visibility: settings.profileVisibility,
+          who_can_message: settings.whoCanMessage,
+          show_online_status: settings.showOnlineStatus,
+          show_read_receipts: settings.showReadReceipts,
           theme: settings.theme,
           language: settings.language,
         })
@@ -101,6 +126,7 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: 'account' as Tab, label: 'Account', icon: User },
+    { id: 'security' as Tab, label: 'Security', icon: Shield },
     { id: 'notifications' as Tab, label: 'Notifications', icon: Bell },
     { id: 'privacy' as Tab, label: 'Privacy', icon: Lock },
     { id: 'appearance' as Tab, label: 'Appearance', icon: Palette },
@@ -168,6 +194,19 @@ export default function SettingsPage() {
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-white mb-6">Account Settings</h2>
 
+                {/* Avatar Upload */}
+                {profile && (
+                  <AvatarUpload
+                    currentAvatarUrl={profile.avatar_url}
+                    userId={profile.id}
+                    onUploadComplete={(url) => {
+                      setProfile({ ...profile, avatar_url: url })
+                    }}
+                  />
+                )}
+
+                <div className="border-t border-gold-500/10 pt-6" />
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">Full Name</label>
@@ -233,6 +272,40 @@ export default function SettingsPage() {
                     />
                   </div>
                 </div>
+
+                {/* Status Message */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    Status Message
+                  </label>
+                  <div className="flex gap-2">
+                    <MessageSquare className="w-5 h-5 text-gray-400 mt-3" />
+                    <input
+                      type="text"
+                      value={settings.statusMessage}
+                      onChange={(e) => setSettings({ ...settings, statusMessage: e.target.value })}
+                      placeholder="What's on your mind?"
+                      maxLength={100}
+                      className="flex-1 px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white transition-all"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">This will be visible to other users</p>
+                </div>
+              </div>
+            )}
+
+            {/* Security Settings */}
+            {activeTab === 'security' && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-white mb-6">Security Settings</h2>
+
+                {/* Password Change */}
+                <PasswordChange />
+
+                <div className="border-t border-gold-500/10 pt-6" />
+
+                {/* Delete Account */}
+                <DeleteAccount />
               </div>
             )}
 
@@ -295,7 +368,125 @@ export default function SettingsPage() {
             {activeTab === 'privacy' && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-white mb-6">Privacy Settings</h2>
-                <p className="text-gray-400">Privacy settings coming soon...</p>
+
+                {/* Profile Visibility */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-3">
+                    Who can see your profile?
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+                      <input
+                        type="radio"
+                        name="profileVisibility"
+                        value="everyone"
+                        checked={settings.profileVisibility === 'everyone'}
+                        onChange={(e) => setSettings({ ...settings, profileVisibility: e.target.value })}
+                        className="w-4 h-4 text-gold-500"
+                      />
+                      <div>
+                        <p className="font-semibold text-white">Everyone</p>
+                        <p className="text-xs text-gray-400">Anyone can view your profile</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center gap-3 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+                      <input
+                        type="radio"
+                        name="profileVisibility"
+                        value="team"
+                        checked={settings.profileVisibility === 'team'}
+                        onChange={(e) => setSettings({ ...settings, profileVisibility: e.target.value })}
+                        className="w-4 h-4 text-gold-500"
+                      />
+                      <div>
+                        <p className="font-semibold text-white">Team Only</p>
+                        <p className="text-xs text-gray-400">Only members of your branch can view</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center gap-3 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+                      <input
+                        type="radio"
+                        name="profileVisibility"
+                        value="private"
+                        checked={settings.profileVisibility === 'private'}
+                        onChange={(e) => setSettings({ ...settings, profileVisibility: e.target.value })}
+                        className="w-4 h-4 text-gold-500"
+                      />
+                      <div>
+                        <p className="font-semibold text-white">Private</p>
+                        <p className="text-xs text-gray-400">Only you can view your profile</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Messaging Privacy */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-3">
+                    Who can send you messages?
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+                      <input
+                        type="radio"
+                        name="whoCanMessage"
+                        value="everyone"
+                        checked={settings.whoCanMessage === 'everyone'}
+                        onChange={(e) => setSettings({ ...settings, whoCanMessage: e.target.value })}
+                        className="w-4 h-4 text-gold-500"
+                      />
+                      <div>
+                        <p className="font-semibold text-white">Everyone</p>
+                        <p className="text-xs text-gray-400">Anyone can message you</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center gap-3 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+                      <input
+                        type="radio"
+                        name="whoCanMessage"
+                        value="team"
+                        checked={settings.whoCanMessage === 'team'}
+                        onChange={(e) => setSettings({ ...settings, whoCanMessage: e.target.value })}
+                        className="w-4 h-4 text-gold-500"
+                      />
+                      <div>
+                        <p className="font-semibold text-white">Team Only</p>
+                        <p className="text-xs text-gray-400">Only team members can message you</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center gap-3 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+                      <input
+                        type="radio"
+                        name="whoCanMessage"
+                        value="none"
+                        checked={settings.whoCanMessage === 'none'}
+                        onChange={(e) => setSettings({ ...settings, whoCanMessage: e.target.value })}
+                        className="w-4 h-4 text-gold-500"
+                      />
+                      <div>
+                        <p className="font-semibold text-white">No One</p>
+                        <p className="text-xs text-gray-400">Disable direct messages</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Additional Privacy Toggles */}
+                <div className="space-y-4 pt-4 border-t border-gold-500/10">
+                  <ToggleSetting
+                    label="Show Online Status"
+                    description="Let others see when you're online"
+                    checked={settings.showOnlineStatus}
+                    onChange={(checked) => setSettings({ ...settings, showOnlineStatus: checked })}
+                  />
+
+                  <ToggleSetting
+                    label="Show Read Receipts"
+                    description="Let others see when you've read their messages"
+                    checked={settings.showReadReceipts}
+                    onChange={(checked) => setSettings({ ...settings, showReadReceipts: checked })}
+                  />
+                </div>
               </div>
             )}
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { getCurrentUser } from '@/lib/supabase/auth'
+import { supabase } from '@/lib/supabase/client'
 import type { Profile } from '@/lib/supabase/client'
 import { 
   Trophy, 
@@ -27,9 +28,15 @@ import {
 
 export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [stats, setStats] = useState({
+    messages: 0,
+    calls: 0,
+    aiQueries: 0,
+  })
 
   useEffect(() => {
     loadProfile()
+    loadStats()
   }, [])
 
   async function loadProfile() {
@@ -37,10 +44,43 @@ export default function DashboardPage() {
     setProfile(user)
   }
 
-  const stats = [
-    { icon: MessageSquare, label: 'Messages', value: '1,234', color: 'from-blue-500 to-purple-500' },
-    { icon: Phone, label: 'Calls', value: '47', color: 'from-green-500 to-teal-500' },
-    { icon: Bot, label: 'AI Queries', value: '89', color: 'from-orange-500 to-red-500' },
+  async function loadStats() {
+    try {
+      const user = await getCurrentUser()
+      if (!user) return
+
+      // Fetch message count
+      const { count: messageCount } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('sender_id', user.id)
+
+      // Fetch call count
+      const { count: callCount } = await supabase
+        .from('call_participants')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
+      // Fetch AI query count
+      const { count: aiCount } = await supabase
+        .from('ai_conversations')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
+      setStats({
+        messages: messageCount || 0,
+        calls: callCount || 0,
+        aiQueries: aiCount || 0,
+      })
+    } catch (error) {
+      console.error('Error loading stats:', error)
+    }
+  }
+
+  const statCards = [
+    { icon: MessageSquare, label: 'Messages', value: stats.messages, color: 'from-blue-500 to-purple-500' },
+    { icon: Phone, label: 'Calls', value: stats.calls, color: 'from-green-500 to-teal-500' },
+    { icon: Bot, label: 'AI Queries', value: stats.aiQueries, color: 'from-orange-500 to-red-500' },
     { icon: TrendingUp, label: 'Rank Score', value: profile?.rank_score || 0, color: 'from-gold-500 to-gold-600' },
   ]
 
@@ -60,7 +100,7 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
+        {statCards.map((stat, index) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, scale: 0.8 }}

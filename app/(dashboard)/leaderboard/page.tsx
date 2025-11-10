@@ -19,14 +19,76 @@ export default function LeaderboardPage() {
   async function fetchLeaderboard() {
     setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('rank_score', { ascending: false })
-        .limit(50)
+      // Calculate date range based on timeframe
+      let dateFilter: Date | null = null
+      const now = new Date()
+      
+      switch (timeframe) {
+        case 'daily':
+          dateFilter = new Date(now.setHours(0, 0, 0, 0))
+          break
+        case 'weekly':
+          dateFilter = new Date(now.setDate(now.getDate() - 7))
+          break
+        case 'monthly':
+          dateFilter = new Date(now.setMonth(now.getMonth() - 1))
+          break
+        case 'all-time':
+        default:
+          dateFilter = null
+      }
 
-      if (!error && data) {
-        setLeaderboard(data)
+      // Fetch profiles with activity filtering
+      if (dateFilter && timeframe !== 'all-time') {
+        // Get users with activity in the timeframe
+        const { data: activityData, error: activityError } = await supabase
+          .from('activity_log')
+          .select('user_id, points_earned')
+          .gte('created_at', dateFilter.toISOString())
+
+        if (activityError) throw activityError
+
+        // Aggregate points by user
+        const userPoints = activityData?.reduce((acc: any, activity: any) => {
+          if (!acc[activity.user_id]) {
+            acc[activity.user_id] = 0
+          }
+          acc[activity.user_id] += activity.points_earned || 0
+          return acc
+        }, {})
+
+        // Fetch user profiles
+        const userIds = Object.keys(userPoints || {})
+        if (userIds.length === 0) {
+          setLeaderboard([])
+          setLoading(false)
+          return
+        }
+
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*')
+          .in('id', userIds)
+
+        if (profilesError) throw profilesError
+
+        // Combine profiles with timeframe points
+        const rankedProfiles = profilesData?.map((profile: any) => ({
+          ...profile,
+          timeframe_score: userPoints[profile.id] || 0,
+        })).sort((a: any, b: any) => b.timeframe_score - a.timeframe_score) || []
+
+        setLeaderboard(rankedProfiles)
+      } else {
+        // All-time: use rank_score
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('rank_score', { ascending: false })
+          .limit(50)
+
+        if (error) throw error
+        setLeaderboard(data || [])
       }
     } catch (error) {
       console.error('Error fetching leaderboard:', error)
@@ -127,7 +189,9 @@ export default function LeaderboardPage() {
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <Medal className="w-5 h-5 text-gray-400" />
-                  <span className="text-2xl font-bold text-white">{leaderboard[1].rank_score}</span>
+                  <span className="text-2xl font-bold text-white">
+                    {timeframe === 'all-time' ? leaderboard[1].rank_score : leaderboard[1].timeframe_score}
+                  </span>
                 </div>
               </div>
             </motion.div>
@@ -167,8 +231,10 @@ export default function LeaderboardPage() {
                   {leaderboard[0].branch.replace('_', '.')}
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <Trophy className="w-6 h-6 text-gold-400" />
-                  <span className="text-3xl font-bold text-gold-400">{leaderboard[0].rank_score}</span>
+                  <Trophy className="w-6 h-6 text-gold-500" />
+                  <span className="text-3xl font-bold text-white">
+                    {timeframe === 'all-time' ? leaderboard[0].rank_score : leaderboard[0].timeframe_score}
+                  </span>
                 </div>
               </div>
             </motion.div>
@@ -204,7 +270,9 @@ export default function LeaderboardPage() {
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <Medal className="w-5 h-5 text-orange-400" />
-                  <span className="text-2xl font-bold text-white">{leaderboard[2].rank_score}</span>
+                  <span className="text-2xl font-bold text-white">
+                    {timeframe === 'all-time' ? leaderboard[2].rank_score : leaderboard[2].timeframe_score}
+                  </span>
                 </div>
               </div>
             </motion.div>
@@ -229,7 +297,8 @@ export default function LeaderboardPage() {
 
           <div className="divide-y divide-gold-500/10">
             {leaderboard.slice(3).map((user, index) => {
-              const rank = getRankBadge(user.rank_score)
+              const score = timeframe === 'all-time' ? user.rank_score : user.timeframe_score
+              const rank = getRankBadge(score)
               return (
                 <motion.div
                   key={user.id}
@@ -267,7 +336,7 @@ export default function LeaderboardPage() {
                   <div className="flex items-center justify-end">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{rank.icon}</span>
-                      <span className={`text-xl font-bold ${rank.textColor}`}>{user.rank_score}</span>
+                      <span className={`text-xl font-bold ${rank.textColor}`}>{score}</span>
                     </div>
                   </div>
                 </motion.div>

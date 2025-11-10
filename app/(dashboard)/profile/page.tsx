@@ -6,6 +6,7 @@ import { Trophy, Flame, Star, Calendar, MessageSquare, Phone, Code, Edit2, Award
 import { getCurrentUser } from '@/lib/supabase/auth'
 import { supabase } from '@/lib/supabase/client'
 import type { Profile } from '@/lib/supabase/client'
+import EditProfileModal from '@/components/profile/EditProfileModal'
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -17,6 +18,7 @@ export default function ProfilePage() {
     aiQueries: 0,
   })
   const [loading, setLoading] = useState(true)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   useEffect(() => {
     loadProfile()
@@ -126,6 +128,7 @@ export default function ProfilePage() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => setShowEditModal(true)}
                 className="p-2 bg-gold-500/20 rounded-lg hover:bg-gold-500/30 transition-colors"
               >
                 <Edit2 className="w-5 h-5 text-gold-500" />
@@ -144,7 +147,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-1 text-gray-400">
                 <Calendar className="w-4 h-4" />
-                <span>Joined {new Date(profile.created_at).toLocaleDateString()}</span>
+                <span>Joined {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Unknown'}</span>
               </div>
             </div>
           </div>
@@ -228,6 +231,19 @@ export default function ProfilePage() {
           )}
         </div>
       </motion.div>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && profile && (
+        <EditProfileModal
+          profile={profile}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={() => {
+            loadProfile()
+            loadAchievements()
+            loadStats()
+          }}
+        />
+      )}
     </div>
   )
 }
