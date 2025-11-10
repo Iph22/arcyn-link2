@@ -25,11 +25,11 @@ export default function HomePage() {
             key={i}
             className="absolute w-1 h-1 bg-ios-blue/20 rounded-full"
             initial={{
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
+              x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1920),
+              y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1080),
             }}
             animate={{
-              y: [null, -window.innerHeight],
+              y: [null, -(typeof window !== 'undefined' ? window.innerHeight : 1080)],
               opacity: [0, 0.5, 0],
             }}
             transition={{

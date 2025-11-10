@@ -1,323 +1,295 @@
--- Enable necessary extensions
+-- Arcyn Link Initial Database Schema
+-- Run this first in Supabase SQL Editor
+
+-- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
--- Branches enum
-CREATE TYPE branch_type AS ENUM ('arcyn_x', 'modulex', 'nexalab');
-
--- User roles
-CREATE TYPE user_role AS ENUM ('admin', 'manager', 'member');
-
--- Message types
-CREATE TYPE message_type AS ENUM ('text', 'image', 'video', 'audio', 'file', 'code');
-
--- Call types
-CREATE TYPE call_type AS ENUM ('audio', 'video');
-
--- Call status
-CREATE TYPE call_status AS ENUM ('ringing', 'active', 'ended', 'missed');
 
 -- ============================================
--- USERS & PROFILES
+-- PROFILES TABLE
 -- ============================================
-
-CREATE TABLE profiles (
+CREATE TABLE IF NOT EXISTS profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    email TEXT UNIQUE NOT NULL,
-    full_name TEXT NOT NULL,
     username TEXT UNIQUE NOT NULL,
-    avatar_url TEXT,
-    branch branch_type NOT NULL,
-    role user_role DEFAULT 'member',
+    full_name TEXT NOT NULL,
     bio TEXT,
+    avatar_url TEXT,
     department TEXT,
     position TEXT,
-    
-    -- Gamification
+    branch TEXT CHECK (branch IN ('arcyn_x', 'modulex', 'nexalab')),
     rank_score INTEGER DEFAULT 0,
     login_streak INTEGER DEFAULT 0,
-    last_login TIMESTAMPTZ,
     total_logins INTEGER DEFAULT 0,
-    contribution_score INTEGER DEFAULT 0,
-    
-    -- Status
-    is_online BOOLEAN DEFAULT FALSE,
-    last_seen TIMESTAMPTZ,
-    status_message TEXT,
-    
-    -- Preferences
-    language TEXT DEFAULT 'en',
-    theme TEXT DEFAULT 'dark',
-    notifications_enabled BOOLEAN DEFAULT TRUE,
-    push_token TEXT,
-    
+    last_login_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ============================================
--- CHANNELS
--- ============================================
+-- Enable RLS
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
-CREATE TABLE channels (
+-- Profiles policies
+CREATE POLICY "Public profiles are viewable by everyone" ON profiles
+    FOR SELECT USING (true);
+
+CREATE POLICY "Users can update own profile" ON profiles
+    FOR UPDATE USING (auth.uid() = id);
+
+-- ============================================
+-- CHANNELS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS channels (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     description TEXT,
-    branch branch_type,
-    is_private BOOLEAN DEFAULT FALSE,
-    is_general BOOLEAN DEFAULT FALSE,
-    avatar_url TEXT,
-    created_by UUID REFERENCES profiles(id),
+    branch TEXT CHECK (branch IN ('arcyn_x', 'modulex', 'nexalab')),
+    is_private BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE channel_members (
+ALTER TABLE channels ENABLE ROW LEVEL SECURITY;
+
+-- ============================================
+-- CHANNEL MEMBERS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS channel_members (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    channel_id UUID REFERENCES channels(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    role user_role DEFAULT 'member',
+    channel_id UUID REFERENCES channels(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+    role TEXT DEFAULT 'member' CHECK (role IN ('admin', 'moderator', 'member')),
     joined_at TIMESTAMPTZ DEFAULT NOW(),
-    muted BOOLEAN DEFAULT FALSE,
     UNIQUE(channel_id, user_id)
 );
 
--- ============================================
--- DIRECT MESSAGES
--- ============================================
+ALTER TABLE channel_members ENABLE ROW LEVEL SECURITY;
 
-CREATE TABLE conversations (
+-- ============================================
+-- CONVERSATIONS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS conversations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    is_group BOOLEAN DEFAULT FALSE,
     name TEXT,
-    avatar_url TEXT,
+    is_group BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE conversation_participants (
+ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+
+-- ============================================
+-- CONVERSATION PARTICIPANTS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS conversation_participants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
     joined_at TIMESTAMPTZ DEFAULT NOW(),
-    muted BOOLEAN DEFAULT FALSE,
     UNIQUE(conversation_id, user_id)
 );
 
--- ============================================
--- MESSAGES
--- ============================================
+ALTER TABLE conversation_participants ENABLE ROW LEVEL SECURITY;
 
-CREATE TABLE messages (
+-- ============================================
+-- MESSAGES TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    content TEXT,
-    message_type message_type DEFAULT 'text',
-    sender_id UUID REFERENCES profiles(id),
+    content TEXT NOT NULL,
+    message_type TEXT DEFAULT 'text' CHECK (message_type IN ('text', 'image', 'video', 'audio', 'file', 'code')),
+    sender_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
     channel_id UUID REFERENCES channels(id) ON DELETE CASCADE,
     conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
-    
-    -- Attachments
+    reply_to_id UUID REFERENCES messages(id) ON DELETE SET NULL,
+    forwarded_from_id UUID REFERENCES messages(id) ON DELETE SET NULL,
     file_url TEXT,
-    file_name TEXT,
-    file_size BIGINT,
-    file_type TEXT,
-    
-    -- Reply/Forward
-    reply_to_id UUID REFERENCES messages(id),
-    forwarded_from_id UUID REFERENCES messages(id),
-    
-    -- Status
-    is_deleted BOOLEAN DEFAULT FALSE,
+    is_deleted BOOLEAN DEFAULT false,
     deleted_at TIMESTAMPTZ,
-    edited BOOLEAN DEFAULT FALSE,
-    edited_at TIMESTAMPTZ,
-    
-    -- AI
-    ai_summary TEXT,
-    
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    
-    CONSTRAINT messages_target_check CHECK (
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT message_target CHECK (
         (channel_id IS NOT NULL AND conversation_id IS NULL) OR
         (channel_id IS NULL AND conversation_id IS NOT NULL)
     )
 );
 
-CREATE INDEX idx_messages_channel ON messages(channel_id, created_at DESC);
-CREATE INDEX idx_messages_conversation ON messages(conversation_id, created_at DESC);
-CREATE INDEX idx_messages_sender ON messages(sender_id);
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
--- MESSAGE REACTIONS
+-- MESSAGE REACTIONS TABLE
 -- ============================================
-
-CREATE TABLE message_reactions (
+CREATE TABLE IF NOT EXISTS message_reactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    message_id UUID REFERENCES messages(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    message_id UUID REFERENCES messages(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
     emoji TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(message_id, user_id, emoji)
 );
 
--- ============================================
--- MESSAGE STATUS (Read receipts, Delivery)
--- ============================================
+ALTER TABLE message_reactions ENABLE ROW LEVEL SECURITY;
 
-CREATE TABLE message_status (
+-- ============================================
+-- MESSAGE STATUS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS message_status (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    message_id UUID REFERENCES messages(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    message_id UUID REFERENCES messages(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
     delivered_at TIMESTAMPTZ,
     read_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(message_id, user_id)
 );
 
--- ============================================
--- CALLS
--- ============================================
+ALTER TABLE message_status ENABLE ROW LEVEL SECURITY;
 
-CREATE TABLE calls (
+-- ============================================
+-- CALLS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS calls (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    call_type call_type NOT NULL,
-    status call_status DEFAULT 'ringing',
-    initiator_id UUID REFERENCES profiles(id),
-    channel_id UUID REFERENCES channels(id),
-    conversation_id UUID REFERENCES conversations(id),
-    
-    -- Call details
-    started_at TIMESTAMPTZ,
+    call_type TEXT NOT NULL CHECK (call_type IN ('audio', 'video')),
+    status TEXT DEFAULT 'ringing' CHECK (status IN ('ringing', 'active', 'ended', 'missed')),
+    initiator_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+    channel_id UUID REFERENCES channels(id) ON DELETE CASCADE,
+    conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
+    started_at TIMESTAMPTZ DEFAULT NOW(),
     ended_at TIMESTAMPTZ,
-    duration INTEGER,
-    
-    -- External service
     agora_channel_name TEXT,
-    agora_token TEXT,
-    
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    
     CONSTRAINT calls_target_check CHECK (
         (channel_id IS NOT NULL AND conversation_id IS NULL) OR
         (channel_id IS NULL AND conversation_id IS NOT NULL)
     )
 );
 
-CREATE TABLE call_participants (
+ALTER TABLE calls ENABLE ROW LEVEL SECURITY;
+
+-- ============================================
+-- CALL PARTICIPANTS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS call_participants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    call_id UUID REFERENCES calls(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    joined_at TIMESTAMPTZ,
+    call_id UUID REFERENCES calls(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+    joined_at TIMESTAMPTZ DEFAULT NOW(),
     left_at TIMESTAMPTZ,
     UNIQUE(call_id, user_id)
 );
 
--- ============================================
--- AI INTERACTIONS
--- ============================================
+ALTER TABLE call_participants ENABLE ROW LEVEL SECURITY;
 
-CREATE TABLE ai_conversations (
+-- ============================================
+-- ACTIVITY LOG TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS activity_log (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    title TEXT,
-    context TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE ai_messages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    conversation_id UUID REFERENCES ai_conversations(id) ON DELETE CASCADE,
-    role TEXT NOT NULL,
-    content TEXT NOT NULL,
-    tokens_used INTEGER,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+    activity_type TEXT NOT NULL,
+    points_earned INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ============================================
--- DOCUMENTS & FILES
--- ============================================
+ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
 
-CREATE TABLE documents (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    title TEXT NOT NULL,
-    file_url TEXT NOT NULL,
-    file_type TEXT,
-    file_size BIGINT,
-    uploaded_by UUID REFERENCES profiles(id),
-    channel_id UUID REFERENCES channels(id),
-    
-    -- AI Analysis
-    ai_summary TEXT,
-    ai_tags TEXT[],
-    
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+CREATE POLICY "Users can view own activity" ON activity_log
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own activity" ON activity_log
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- ============================================
--- ACHIEVEMENTS & GAMIFICATION
+-- ACHIEVEMENTS TABLE
 -- ============================================
-
-CREATE TABLE achievements (
+CREATE TABLE IF NOT EXISTS achievements (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     description TEXT,
     icon TEXT,
     points INTEGER DEFAULT 0,
-    criteria JSONB
+    requirement_type TEXT,
+    requirement_value INTEGER,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE user_achievements (
+ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Achievements are viewable by everyone" ON achievements
+    FOR SELECT USING (true);
+
+-- ============================================
+-- USER ACHIEVEMENTS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS user_achievements (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    achievement_id UUID REFERENCES achievements(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+    achievement_id UUID REFERENCES achievements(id) ON DELETE CASCADE NOT NULL,
     earned_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, achievement_id)
 );
 
--- ============================================
--- ACTIVITY LOG
--- ============================================
+ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
 
-CREATE TABLE activity_log (
+CREATE POLICY "Users can view own achievements" ON user_achievements
+    FOR SELECT USING (auth.uid() = user_id);
+
+-- ============================================
+-- NOTIFICATIONS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    activity_type TEXT NOT NULL,
-    metadata JSONB,
-    points_earned INTEGER DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ============================================
--- NOTIFICATIONS
--- ============================================
-
-CREATE TABLE notifications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
     type TEXT NOT NULL,
     title TEXT NOT NULL,
     message TEXT,
-    data JSONB,
-    read BOOLEAN DEFAULT FALSE,
+    link TEXT,
+    is_read BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_notifications_user_read ON notifications(user_id, read, created_at DESC);
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own notifications" ON notifications
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own notifications" ON notifications
+    FOR UPDATE USING (auth.uid() = user_id);
 
 -- ============================================
--- FUNCTIONS & TRIGGERS
+-- FUNCTIONS
 -- ============================================
 
--- Update updated_at timestamp
+-- Function to handle new user signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.profiles (id, username, full_name)
+    VALUES (
+        NEW.id,
+        COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
+        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1))
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger for new user signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ LANGUAGE plpgsql;
 
+-- Add updated_at triggers
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -327,108 +299,25 @@ CREATE TRIGGER update_channels_updated_at BEFORE UPDATE ON channels
 CREATE TRIGGER update_conversations_updated_at BEFORE UPDATE ON conversations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Calculate rank score
-CREATE OR REPLACE FUNCTION calculate_rank_score(user_uuid UUID)
-RETURNS INTEGER AS $$
-DECLARE
-    score INTEGER := 0;
+CREATE TRIGGER update_messages_updated_at BEFORE UPDATE ON messages
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- INITIAL DATA
+-- ============================================
+
+-- Insert some default achievements
+INSERT INTO achievements (name, description, icon, points, requirement_type, requirement_value) VALUES
+    ('First Message', 'Send your first message', '💬', 10, 'message_count', 1),
+    ('Chatty', 'Send 100 messages', '🗨️', 50, 'message_count', 100),
+    ('Social Butterfly', 'Join 5 channels', '🦋', 25, 'channel_count', 5),
+    ('Early Bird', 'Login 7 days in a row', '🌅', 100, 'login_streak', 7),
+    ('Dedicated', 'Login 30 days in a row', '🔥', 500, 'login_streak', 30)
+ON CONFLICT DO NOTHING;
+
+-- Success message
+DO $$
 BEGIN
-    SELECT 
-        (total_logins * 10) +
-        (login_streak * 50) +
-        (contribution_score * 5)
-    INTO score
-    FROM profiles
-    WHERE id = user_uuid;
-    
-    RETURN COALESCE(score, 0);
-END;
-$$ LANGUAGE plpgsql;
-
--- Update rank score trigger
-CREATE OR REPLACE FUNCTION update_rank_score()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.rank_score = calculate_rank_score(NEW.id);
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER profiles_rank_score_trigger
-    BEFORE INSERT OR UPDATE ON profiles
-    FOR EACH ROW
-    EXECUTE FUNCTION update_rank_score();
-
--- ============================================
--- ROW LEVEL SECURITY (RLS)
--- ============================================
-
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE channels ENABLE ROW LEVEL SECURITY;
-ALTER TABLE channel_members ENABLE ROW LEVEL SECURITY;
-ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE conversation_participants ENABLE ROW LEVEL SECURITY;
-ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE message_reactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE message_status ENABLE ROW LEVEL SECURITY;
-ALTER TABLE calls ENABLE ROW LEVEL SECURITY;
-ALTER TABLE call_participants ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ai_conversations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ai_messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
-ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
-
--- Profiles policies
-CREATE POLICY "Users can view all profiles" ON profiles
-    FOR SELECT USING (true);
-
-CREATE POLICY "Users can update own profile" ON profiles
-    FOR UPDATE USING (auth.uid() = id);
-
--- Channels policies
-CREATE POLICY "Users can view channels they're members of" ON channels
-    FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM channel_members
-            WHERE channel_members.channel_id = channels.id
-            AND channel_members.user_id = auth.uid()
-        )
-    );
-
--- Messages policies
-CREATE POLICY "Users can view messages in their channels" ON messages
-    FOR SELECT USING (
-        (channel_id IS NOT NULL AND EXISTS (
-            SELECT 1 FROM channel_members
-            WHERE channel_members.channel_id = messages.channel_id
-            AND channel_members.user_id = auth.uid()
-        ))
-        OR
-        (conversation_id IS NOT NULL AND EXISTS (
-            SELECT 1 FROM conversation_participants
-            WHERE conversation_participants.conversation_id = messages.conversation_id
-            AND conversation_participants.user_id = auth.uid()
-        ))
-    );
-
-CREATE POLICY "Users can insert messages" ON messages
-    FOR INSERT WITH CHECK (auth.uid() = sender_id);
-
-CREATE POLICY "Users can delete own messages" ON messages
-    FOR UPDATE USING (auth.uid() = sender_id);
-
--- ============================================
--- SEED DATA
--- ============================================
-
--- Insert default achievements
-INSERT INTO achievements (name, description, icon, points, criteria) VALUES
-    ('First Login', 'Welcome to Arcyn Link!', '🎉', 10, '{"type": "login_count", "value": 1}'::jsonb),
-    ('Week Warrior', '7-day login streak', '🔥', 100, '{"type": "login_streak", "value": 7}'::jsonb),
-    ('AI Pioneer', 'Used AI assistant 10 times', '🤖', 50, '{"type": "ai_queries", "value": 10}'::jsonb),
-    ('Code Master', 'Shared 50 code snippets', '💻', 200, '{"type": "code_shares", "value": 50}'::jsonb),
-    ('Team Player', 'Sent 1000 messages', '💬', 150, '{"type": "message_count", "value": 1000}'::jsonb),
-    ('Call Champion', 'Participated in 50 calls', '📞', 100, '{"type": "call_count", "value": 50}'::jsonb);
+    RAISE NOTICE '✅ Initial schema created successfully!';
+    RAISE NOTICE '📝 Next: Run 20240102000000_add_notification_preferences.sql';
+END $$;
