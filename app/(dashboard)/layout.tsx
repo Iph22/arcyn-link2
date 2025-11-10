@@ -44,9 +44,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
       <div className="min-h-screen bg-arcyn-bg flex items-center justify-center">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-gold-500 rounded-full animate-bounce" />
-          <div className="w-3 h-3 bg-gold-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-          <div className="w-3 h-3 bg-gold-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+          <div className="w-3 h-3 bg-ios-blue rounded-full animate-bounce" />
+          <div className="w-3 h-3 bg-ios-blue rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+          <div className="w-3 h-3 bg-ios-blue rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
         </div>
       </div>
     )
@@ -68,10 +68,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <motion.aside
         initial={{ x: -300 }}
         animate={{ x: 0 }}
-        className="w-72 bg-arcyn-surface border-r border-gold-500/20 flex flex-col"
+        className="w-72 bg-arcyn-surface border-r border-arcyn-border flex flex-col shadow-ios"
       >
         {/* Logo */}
-        <div className="p-6 border-b border-gold-500/20">
+        <div className="p-6 border-b border-arcyn-border">
           <div className="flex items-center gap-3">
             <div className="w-32 h-32 mx-auto mb-8">
               <img 
@@ -81,20 +81,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               />
             </div>
             <div>
-              <h1 className="text-xl font-display font-bold text-gold-500">ARCYN LINK</h1>
-              <p className="text-xs text-gray-400">AI Evolution</p>
+              <h1 className="text-xl font-display font-bold text-ios-blue">ARCYN LINK</h1>
+              <p className="text-xs text-ios-gray-500">AI Evolution</p>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => (
             <Link key={item.href} href={item.href}>
               <motion.div
-                whileHover={{ scale: 1.02, x: 5 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-arcyn-bg transition-all cursor-pointer"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-ios-gray-600 hover:text-ios-gray-900 hover:bg-ios-gray-50 transition-all cursor-pointer"
               >
                 <item.icon className="w-5 h-5" />
                 <span className="font-medium">{item.label}</span>
@@ -105,32 +105,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* User Profile */}
         {profile && (
-          <div className="p-4 border-t border-gold-500/20">
+          <div className="p-4 border-t border-arcyn-border">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-gold-400 to-gold-600 rounded-full flex items-center justify-center text-sm font-bold text-black">
+              <div className="w-10 h-10 bg-gradient-to-br from-ios-blue to-ios-blue-light rounded-full flex items-center justify-center text-sm font-bold text-white">
                 {profile.full_name[0]}
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-white">{profile.full_name}</p>
-                <p className="text-xs text-gray-400">@{profile.username}</p>
+                <p className="text-sm font-semibold text-ios-gray-900">{profile.full_name}</p>
+                <p className="text-xs text-ios-gray-500">@{profile.username}</p>
               </div>
             </div>
             <div className="flex gap-2">
               <Link href="/profile" className="flex-1">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full px-3 py-2 bg-arcyn-bg border border-gold-500/20 rounded-lg text-xs text-gray-400 hover:text-white hover:border-gold-500/40 transition-all flex items-center justify-center gap-2"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full px-3 py-2 bg-ios-gray-50 border border-arcyn-border rounded-lg text-xs text-ios-gray-700 hover:text-ios-gray-900 hover:bg-ios-gray-100 transition-all flex items-center justify-center gap-2"
                 >
                   <User className="w-4 h-4" />
                   Profile
                 </motion.button>
               </Link>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleSignOut}
-                className="px-3 py-2 bg-arcyn-bg border border-gold-500/20 rounded-lg text-xs text-gray-400 hover:text-red-400 hover:border-red-500/40 transition-all"
+                className="px-3 py-2 bg-ios-gray-50 border border-arcyn-border rounded-lg text-xs text-ios-gray-700 hover:text-ios-red hover:border-ios-red/40 transition-all"
               >
                 <LogOut className="w-4 h-4" />
               </motion.button>
@@ -142,7 +142,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="h-16 bg-arcyn-surface/50 backdrop-blur border-b border-gold-500/20 flex items-center justify-between px-6">
+        <div className="h-16 glass border-b border-arcyn-border flex items-center justify-between px-6">
           <GlobalSearch />
           <div className="flex items-center gap-4">
             <NotificationBell />

@@ -54,7 +54,7 @@ export default function SignUpPage() {
         {[...Array(50)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 bg-gold-500/30 rounded-full"
+            className="absolute w-1 h-1 bg-ios-blue/20 rounded-full"
             initial={{
               x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1920),
               y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1080),
@@ -77,7 +77,7 @@ export default function SignUpPage() {
         initial={{ x: -1000, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 50, damping: 20 }}
-        className="relative z-10 w-full max-w-md p-8 bg-arcyn-surface/80 backdrop-blur-xl rounded-3xl border border-gold-500/20 shadow-gold-glow-lg mx-4"
+        className="relative z-10 w-full max-w-md p-8 glass-card rounded-3xl shadow-ios-xl mx-4"
       >
         {/* Logo */}
         <motion.div
@@ -99,7 +99,7 @@ export default function SignUpPage() {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="text-3xl font-display font-bold text-center bg-gradient-to-r from-gold-400 to-gold-600 bg-clip-text text-transparent mb-2"
+          className="text-3xl font-display font-bold text-center bg-gradient-to-r from-ios-blue to-ios-blue-light bg-clip-text text-transparent mb-2"
         >
           Join Arcyn Link
         </motion.h1>
@@ -108,7 +108,7 @@ export default function SignUpPage() {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="text-center text-gray-400 mb-8"
+          className="text-center text-ios-gray-600 mb-8"
         >
           Accelerating AI Evolution in Africa
         </motion.p>
@@ -127,7 +127,7 @@ export default function SignUpPage() {
               required
               value={formData.fullName}
               onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              className="w-full px-4 py-3 bg-black/50 border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-gold-500 placeholder-gray-500 transition-all"
+              className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all shadow-ios-inner"
             />
           </motion.div>
 
@@ -143,7 +143,7 @@ export default function SignUpPage() {
               required
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="w-full px-4 py-3 bg-black/50 border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-gold-500 placeholder-gray-500 transition-all"
+              className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all shadow-ios-inner"
             />
           </motion.div>
 
@@ -159,7 +159,7 @@ export default function SignUpPage() {
               required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-4 py-3 bg-black/50 border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-gold-500 placeholder-gray-500 transition-all"
+              className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all shadow-ios-inner"
             />
           </motion.div>
 
@@ -176,9 +176,9 @@ export default function SignUpPage() {
               minLength={6}
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-3 bg-black/50 border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-gold-500 placeholder-gray-500 transition-all"
+              className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all shadow-ios-inner"
             />
-            <p className="text-xs text-gray-500 mt-1 ml-1">Minimum 6 characters</p>
+            <p className="text-xs text-ios-gray-500 mt-1 ml-1">Minimum 6 characters</p>
           </motion.div>
 
           {/* Branch Selection */}
@@ -191,7 +191,7 @@ export default function SignUpPage() {
               required
               value={formData.branch}
               onChange={(e) => setFormData({ ...formData, branch: e.target.value as any })}
-              className="w-full px-4 py-3 bg-black/50 border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-gold-500 transition-all"
+              className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 transition-all shadow-ios-inner"
             >
               <option value="">Select Branch</option>
               <option value="arcyn_x">Arcyn.x</option>
@@ -205,11 +205,11 @@ export default function SignUpPage() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 1 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-gradient-to-r from-gold-500 to-gold-600 text-black font-bold rounded-xl hover:shadow-gold-glow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-ios-blue text-white font-semibold rounded-xl hover:bg-ios-blue/90 shadow-ios-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating Account...' : 'Create Account'}
           </motion.button>
@@ -220,10 +220,10 @@ export default function SignUpPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.1 }}
-          className="text-center text-gray-400 mt-6"
+          className="text-center text-ios-gray-600 mt-6"
         >
           Already have an account?{' '}
-          <Link href="/signin" className="text-gold-500 hover:text-gold-400 transition-colors font-semibold">
+          <Link href="/signin" className="text-ios-blue hover:text-ios-blue/80 transition-colors font-semibold">
             Sign In
           </Link>
         </motion.p>

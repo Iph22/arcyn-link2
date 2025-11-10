@@ -51,37 +51,49 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Arcyn Custom Colors (Black & Gold)
+        // iOS 26 Color Palette
+        ios: {
+          blue: '#007AFF',
+          'blue-light': '#5AC8FA',
+          red: '#FF3B30',
+          green: '#34C759',
+          orange: '#FF9500',
+          yellow: '#FFCC00',
+          purple: '#AF52DE',
+          pink: '#FF2D55',
+          gray: {
+            50: '#F5F5F7',
+            100: '#E5E5EA',
+            200: '#D1D1D6',
+            300: '#C7C7CC',
+            400: '#AEAEB2',
+            500: '#8E8E93',
+            600: '#636366',
+            700: '#48484A',
+            800: '#3A3A3C',
+            900: '#1C1C1E',
+          },
+        },
+        // Subtle gold accent (less prominent than before)
         gold: {
           50: '#FFFBEB',
           100: '#FEF3C7',
           200: '#FDE68A',
           300: '#FCD34D',
           400: '#FBBF24',
-          500: '#F59E0B', // Primary gold
-          600: '#D97706',
-          700: '#B45309',
-          800: '#92400E',
-          900: '#78350F',
+          500: '#FFCC00', // Softer gold
+          600: '#F5B800',
+          700: '#D4A000',
+          800: '#B38800',
+          900: '#927000',
         },
-        black: {
-          50: '#18181B',
-          100: '#1A1A1D',
-          200: '#27272A',
-          300: '#3F3F46',
-          400: '#52525B',
-          500: '#71717A',
-          600: '#A1A1AA',
-          700: '#D4D4D8',
-          800: '#E4E4E7',
-          900: '#F4F4F5',
-        },
+        // Light theme colors
         arcyn: {
-          bg: '#0A0A0B',
-          surface: '#141416',
-          border: '#1F1F23',
-          gold: '#F59E0B',
-          'gold-glow': 'rgba(245, 158, 11, 0.2)',
+          bg: '#F5F5F7',
+          surface: '#FFFFFF',
+          border: '#E5E5EA',
+          accent: '#007AFF',
+          'accent-light': '#5AC8FA',
         }
       },
       borderRadius: {
@@ -90,14 +102,17 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        display: ['Orbitron', 'sans-serif'],
-        mono: ['Fira Code', 'monospace'],
+        sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        display: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        mono: ['SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
       },
       boxShadow: {
-        'gold-glow': '0 0 20px rgba(245, 158, 11, 0.3)',
-        'gold-glow-lg': '0 0 40px rgba(245, 158, 11, 0.4)',
-        'inner-glow': 'inset 0 0 20px rgba(245, 158, 11, 0.1)',
+        'ios': '0 2px 8px rgba(0, 0, 0, 0.08)',
+        'ios-sm': '0 1px 4px rgba(0, 0, 0, 0.06)',
+        'ios-md': '0 4px 12px rgba(0, 0, 0, 0.1)',
+        'ios-lg': '0 8px 24px rgba(0, 0, 0, 0.12)',
+        'ios-xl': '0 12px 40px rgba(0, 0, 0, 0.16)',
+        'ios-inner': 'inset 0 1px 2px rgba(0, 0, 0, 0.05)',
       },
       keyframes: {
         "accordion-down": {

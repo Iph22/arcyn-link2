@@ -95,10 +95,10 @@ export default function CallsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-display font-bold bg-gradient-to-r from-gold-400 to-gold-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-display font-bold bg-gradient-to-r from-ios-blue to-ios-blue-light bg-clip-text text-transparent mb-2">
             Calls
           </h1>
-          <p className="text-gray-400">Start a call or view your call history</p>
+          <p className="text-ios-gray-600">Start a call or view your call history</p>
         </motion.div>
 
         {/* Call Actions */}
@@ -108,7 +108,7 @@ export default function CallsPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => startCall('audio')}
             disabled={loading}
@@ -130,7 +130,7 @@ export default function CallsPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => startCall('video')}
             disabled={loading}
@@ -153,27 +153,27 @@ export default function CallsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-arcyn-surface rounded-3xl border border-gold-500/20 p-6"
+          className="glass-card rounded-3xl p-6 shadow-ios-lg"
         >
           <div className="flex items-center gap-3 mb-6">
-            <Clock className="w-6 h-6 text-gold-500" />
-            <h2 className="text-2xl font-bold text-white">Call History</h2>
+            <Clock className="w-6 h-6 text-ios-blue" />
+            <h2 className="text-2xl font-bold text-ios-gray-900">Call History</h2>
           </div>
 
           {calls.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-20 h-20 bg-arcyn-bg rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Phone className="w-10 h-10 text-gray-600" />
+              <div className="w-20 h-20 bg-ios-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Phone className="w-10 h-10 text-ios-gray-500" />
               </div>
-              <p className="text-gray-400">No calls yet</p>
-              <p className="text-sm text-gray-500 mt-1">Start your first call above!</p>
+              <p className="text-ios-gray-600">No calls yet</p>
+              <p className="text-sm text-ios-gray-500 mt-1">Start your first call above!</p>
             </div>
           ) : (
             <div className="space-y-3">
               {calls.map((call) => (
                 <div
                   key={call.id}
-                  className="flex items-center justify-between p-4 bg-arcyn-bg rounded-xl hover:bg-arcyn-bg/80 transition-colors"
+                  className="flex items-center justify-between p-4 bg-ios-gray-50 rounded-xl hover:bg-ios-gray-100 transition-colors"
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -188,10 +188,10 @@ export default function CallsPage() {
                       )}
                     </div>
                     <div>
-                      <p className="text-white font-semibold">
+                      <p className="text-ios-gray-900 font-semibold">
                         {call.call_type === 'video' ? 'Video Call' : 'Audio Call'}
                       </p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-ios-gray-600">
                         {new Date(call.created_at).toLocaleString()}
                       </p>
                     </div>
@@ -200,7 +200,7 @@ export default function CallsPage() {
                     call.status === 'active' ? 'bg-green-500/20 text-green-400' :
                     call.status === 'ended' ? 'bg-gray-500/20 text-gray-400' :
                     call.status === 'missed' ? 'bg-red-500/20 text-red-400' :
-                    'bg-gold-500/20 text-gold-400'
+                    'bg-ios-blue/20 text-ios-blue'
                   }`}>
                     {call.status}
                   </div>

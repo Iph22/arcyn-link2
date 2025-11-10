@@ -20,17 +20,17 @@ export default function HomePage() {
     <div className="min-h-screen bg-arcyn-bg flex items-center justify-center overflow-hidden relative">
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(50)].map((_, i) => (
+        {[...Array(30)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 bg-gold-500/30 rounded-full"
+            className="absolute w-1 h-1 bg-ios-blue/20 rounded-full"
             initial={{
               x: Math.random() * window.innerWidth,
               y: Math.random() * window.innerHeight,
             }}
             animate={{
               y: [null, -window.innerHeight],
-              opacity: [0, 1, 0],
+              opacity: [0, 0.5, 0],
             }}
             transition={{
               duration: Math.random() * 10 + 10,
@@ -60,7 +60,7 @@ export default function HomePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-6xl font-display font-bold bg-gradient-to-r from-gold-400 to-gold-600 bg-clip-text text-transparent mb-4"
+          className="text-6xl font-display font-bold bg-gradient-to-r from-ios-blue to-ios-blue-light bg-clip-text text-transparent mb-4"
         >
           ARCYN LINK
         </motion.h1>
@@ -69,7 +69,7 @@ export default function HomePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="text-xl text-gray-400 mb-8"
+          className="text-xl text-ios-gray-600 mb-8"
         >
           Accelerating AI Evolution in Africa 🌍
         </motion.p>
@@ -80,9 +80,9 @@ export default function HomePage() {
           transition={{ delay: 0.7 }}
           className="flex items-center justify-center gap-2"
         >
-          <div className="w-2 h-2 bg-gold-500 rounded-full animate-bounce" />
-          <div className="w-2 h-2 bg-gold-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-          <div className="w-2 h-2 bg-gold-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+          <div className="w-2 h-2 bg-ios-blue rounded-full animate-bounce" />
+          <div className="w-2 h-2 bg-ios-blue rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+          <div className="w-2 h-2 bg-ios-blue rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
         </motion.div>
       </div>
     </div>

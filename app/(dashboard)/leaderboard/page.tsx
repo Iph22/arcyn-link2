@@ -109,9 +109,9 @@ export default function LeaderboardPage() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-gold-500 rounded-full animate-bounce" />
-          <div className="w-3 h-3 bg-gold-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-          <div className="w-3 h-3 bg-gold-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+          <div className="w-3 h-3 bg-ios-blue rounded-full animate-bounce" />
+          <div className="w-3 h-3 bg-ios-blue rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+          <div className="w-3 h-3 bg-ios-blue rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
         </div>
       </div>
     )
@@ -126,10 +126,10 @@ export default function LeaderboardPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="text-4xl font-display font-bold bg-gradient-to-r from-gold-400 to-gold-600 bg-clip-text text-transparent mb-2">
+            <h1 className="text-4xl font-display font-bold bg-gradient-to-r from-ios-blue to-ios-blue-light bg-clip-text text-transparent mb-2">
               Leaderboard
             </h1>
-            <p className="text-gray-400">Top contributors across Arcyn</p>
+            <p className="text-ios-gray-600">Top contributors across Arcyn</p>
           </motion.div>
 
           {/* Timeframe Selector */}
@@ -137,7 +137,7 @@ export default function LeaderboardPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="flex gap-2 bg-arcyn-surface p-1 rounded-xl border border-gold-500/20"
+            className="flex gap-2 glass-card p-1 rounded-xl"
           >
             {(['daily', 'weekly', 'monthly', 'all-time'] as Timeframe[]).map((tf) => (
               <button
@@ -145,8 +145,8 @@ export default function LeaderboardPage() {
                 onClick={() => setTimeframe(tf)}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                   timeframe === tf
-                    ? 'bg-gradient-to-r from-gold-500 to-gold-600 text-black'
-                    : 'text-gray-400 hover:text-white'
+                    ? 'bg-ios-blue text-white'
+                    : 'text-ios-gray-600 hover:text-ios-gray-900'
                 }`}
               >
                 {tf.charAt(0).toUpperCase() + tf.slice(1).replace('-', ' ')}
@@ -165,19 +165,19 @@ export default function LeaderboardPage() {
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-gradient-to-br from-gray-600/20 to-gray-700/20 rounded-3xl p-6 border-2 border-gray-500/30 backdrop-blur"
+              className="glass-card rounded-3xl p-6 border-2 border-ios-gray-300 shadow-ios-lg"
             >
               <div className="text-center">
                 <div className="relative inline-block mb-4">
-                  <div className="w-24 h-24 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center text-4xl font-bold text-white shadow-lg">
+                  <div className="w-24 h-24 bg-gradient-to-br from-ios-gray-400 to-ios-gray-600 rounded-full flex items-center justify-center text-4xl font-bold text-white shadow-ios-lg">
                     {leaderboard[1].full_name[0]}
                   </div>
-                  <div className="absolute -top-2 -right-2 w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-xl font-bold text-white border-2 border-arcyn-bg">
+                  <div className="absolute -top-2 -right-2 w-10 h-10 bg-ios-gray-500 rounded-full flex items-center justify-center text-xl font-bold text-white border-2 border-arcyn-bg shadow-ios">
                     2
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-1">{leaderboard[1].full_name}</h3>
-                <p className="text-sm text-gray-300 mb-3">@{leaderboard[1].username}</p>
+                <h3 className="text-xl font-bold text-ios-gray-900 mb-1">{leaderboard[1].full_name}</h3>
+                <p className="text-sm text-ios-gray-600 mb-3">@{leaderboard[1].username}</p>
                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 ${
                   leaderboard[1].branch === 'arcyn_x'
                     ? 'bg-blue-500/20 text-blue-400'
@@ -188,8 +188,8 @@ export default function LeaderboardPage() {
                   {leaderboard[1].branch.replace('_', '.')}
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <Medal className="w-5 h-5 text-gray-400" />
-                  <span className="text-2xl font-bold text-white">
+                  <Medal className="w-5 h-5 text-ios-gray-500" />
+                  <span className="text-2xl font-bold text-ios-gray-900">
                     {timeframe === 'all-time' ? leaderboard[1].rank_score : leaderboard[1].timeframe_score}
                   </span>
                 </div>
@@ -203,24 +203,24 @@ export default function LeaderboardPage() {
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-gradient-to-br from-gold-500/20 to-gold-600/20 rounded-3xl p-8 border-2 border-gold-400/50 shadow-gold-glow-lg backdrop-blur relative overflow-hidden"
+              className="glass-card rounded-3xl p-8 border-2 border-ios-yellow shadow-ios-xl relative overflow-hidden bg-gradient-to-br from-ios-yellow/10 to-ios-orange/10"
             >
               {/* Crown */}
               <div className="absolute -top-8 left-1/2 -translate-x-1/2">
-                <Crown className="w-16 h-16 text-gold-400 animate-float" />
+                <Crown className="w-16 h-16 text-ios-yellow animate-float" />
               </div>
 
               <div className="text-center pt-4">
                 <div className="relative inline-block mb-4">
-                  <div className="w-32 h-32 bg-gradient-to-br from-gold-400 to-gold-600 rounded-full flex items-center justify-center text-5xl font-bold text-black shadow-gold-glow-lg">
+                  <div className="w-32 h-32 bg-gradient-to-br from-ios-yellow to-ios-orange rounded-full flex items-center justify-center text-5xl font-bold text-white shadow-ios-xl">
                     {leaderboard[0].full_name[0]}
                   </div>
-                  <div className="absolute -top-2 -right-2 w-12 h-12 bg-gold-500 rounded-full flex items-center justify-center text-2xl font-bold text-black border-2 border-arcyn-bg">
+                  <div className="absolute -top-2 -right-2 w-12 h-12 bg-ios-yellow rounded-full flex items-center justify-center text-2xl font-bold text-white border-2 border-arcyn-bg shadow-ios">
                     1
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-1">{leaderboard[0].full_name}</h3>
-                <p className="text-sm text-gold-200 mb-3">@{leaderboard[0].username}</p>
+                <h3 className="text-2xl font-bold text-ios-gray-900 mb-1">{leaderboard[0].full_name}</h3>
+                <p className="text-sm text-ios-orange mb-3">@{leaderboard[0].username}</p>
                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4 ${
                   leaderboard[0].branch === 'arcyn_x'
                     ? 'bg-blue-500/30 text-blue-300'
@@ -231,8 +231,8 @@ export default function LeaderboardPage() {
                   {leaderboard[0].branch.replace('_', '.')}
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <Trophy className="w-6 h-6 text-gold-500" />
-                  <span className="text-3xl font-bold text-white">
+                  <Trophy className="w-6 h-6 text-ios-yellow" />
+                  <span className="text-3xl font-bold text-ios-gray-900">
                     {timeframe === 'all-time' ? leaderboard[0].rank_score : leaderboard[0].timeframe_score}
                   </span>
                 </div>
@@ -246,7 +246,7 @@ export default function LeaderboardPage() {
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-gradient-to-br from-orange-600/20 to-orange-700/20 rounded-3xl p-6 border-2 border-orange-500/30 backdrop-blur"
+              className="glass-card rounded-3xl p-6 border-2 border-ios-orange/40 shadow-ios-lg"
             >
               <div className="text-center">
                 <div className="relative inline-block mb-4">
@@ -257,8 +257,8 @@ export default function LeaderboardPage() {
                     3
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-1">{leaderboard[2].full_name}</h3>
-                <p className="text-sm text-orange-200 mb-3">@{leaderboard[2].username}</p>
+                <h3 className="text-xl font-bold text-ios-gray-900 mb-1">{leaderboard[2].full_name}</h3>
+                <p className="text-sm text-ios-orange mb-3">@{leaderboard[2].username}</p>
                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 ${
                   leaderboard[2].branch === 'arcyn_x'
                     ? 'bg-blue-500/20 text-blue-400'
@@ -286,16 +286,16 @@ export default function LeaderboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-arcyn-surface rounded-3xl border border-gold-500/20 overflow-hidden"
+          className="glass-card rounded-3xl overflow-hidden shadow-ios-lg"
         >
-          <div className="grid grid-cols-5 gap-4 p-4 border-b border-gold-500/20 text-sm font-semibold text-gray-400">
+          <div className="grid grid-cols-5 gap-4 p-4 border-b border-arcyn-border text-sm font-semibold text-ios-gray-600">
             <div>Rank</div>
             <div className="col-span-2">User</div>
             <div>Branch</div>
             <div className="text-right">Score</div>
           </div>
 
-          <div className="divide-y divide-gold-500/10">
+          <div className="divide-y divide-arcyn-border">
             {leaderboard.slice(3).map((user, index) => {
               const score = timeframe === 'all-time' ? user.rank_score : user.timeframe_score
               const rank = getRankBadge(score)
@@ -305,10 +305,10 @@ export default function LeaderboardPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 + index * 0.05 }}
-                  className="grid grid-cols-5 gap-4 p-4 hover:bg-arcyn-bg/50 transition-colors"
+                  className="grid grid-cols-5 gap-4 p-4 hover:bg-ios-gray-50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl font-bold text-gray-500">{index + 4}</span>
+                    <span className="text-2xl font-bold text-ios-gray-500">{index + 4}</span>
                   </div>
 
                   <div className="col-span-2 flex items-center gap-3">
@@ -316,8 +316,8 @@ export default function LeaderboardPage() {
                       {user.full_name[0]}
                     </div>
                     <div>
-                      <p className="font-semibold text-white">{user.full_name}</p>
-                      <p className="text-sm text-gray-400">@{user.username}</p>
+                      <p className="font-semibold text-ios-gray-900">{user.full_name}</p>
+                      <p className="text-sm text-ios-gray-600">@{user.username}</p>
                     </div>
                   </div>
 
@@ -353,7 +353,7 @@ export default function LeaderboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <h2 className="text-2xl font-display font-bold text-white mb-4">Featured Achievements</h2>
+          <h2 className="text-2xl font-display font-bold text-ios-gray-900 mb-4">Featured Achievements</h2>
           <div className="grid grid-cols-4 gap-4">
             {[
               { icon: Flame, name: 'Week Warrior', color: 'from-red-500 to-orange-500' },
@@ -366,7 +366,7 @@ export default function LeaderboardPage() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 + index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.02 }}
                 className={`bg-gradient-to-br ${achievement.color} rounded-2xl p-6 text-center cursor-pointer transition-transform`}
               >
                 <achievement.icon className="w-12 h-12 text-white mx-auto mb-3" />

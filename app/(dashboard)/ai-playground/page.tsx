@@ -81,16 +81,16 @@ export default function AIPlaygroundPage() {
       <motion.div
         initial={{ x: -300 }}
         animate={{ x: 0 }}
-        className="w-80 bg-arcyn-surface border-r border-gold-500/20 p-6 flex flex-col"
+        className="w-80 bg-arcyn-surface border-r border-arcyn-border p-6 flex flex-col shadow-ios"
       >
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 bg-gradient-to-br from-gold-400 to-gold-600 rounded-xl flex items-center justify-center shadow-gold-glow">
-            <Bot className="w-6 h-6 text-black" />
+          <div className="w-12 h-12 bg-gradient-to-br from-ios-blue to-ios-blue-light rounded-xl flex items-center justify-center shadow-ios">
+            <Bot className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-display font-bold text-white">AI Playground</h1>
-            <p className="text-sm text-gray-400">Powered by Claude</p>
+            <h1 className="text-xl font-display font-bold text-ios-gray-900">AI Playground</h1>
+            <p className="text-sm text-ios-gray-600">Powered by Claude</p>
           </div>
         </div>
 
@@ -107,8 +107,8 @@ export default function AIPlaygroundPage() {
               }}
               className={`w-full p-4 rounded-xl border transition-all text-left ${
                 mode === m.id
-                  ? `bg-gradient-to-r ${m.color} border-transparent text-white shadow-gold-glow`
-                  : 'bg-arcyn-bg border-gold-500/20 text-gray-400 hover:border-gold-500/40'
+                  ? `bg-gradient-to-r ${m.color} border-transparent text-white shadow-ios-md`
+                  : 'bg-white border-arcyn-border text-ios-gray-700 hover:border-ios-blue/40'
               }`}
             >
               <div className="flex items-center gap-3 mb-2">
@@ -121,11 +121,11 @@ export default function AIPlaygroundPage() {
         </div>
 
         {/* Stats */}
-        <div className="mt-6 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20">
-          <p className="text-sm text-gray-400 mb-2">Current Session</p>
+        <div className="mt-6 p-4 glass-card rounded-xl">
+          <p className="text-sm text-ios-gray-600 mb-2">Current Session</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-gold-500">{messages.length}</span>
-            <span className="text-gray-400">messages</span>
+            <span className="text-3xl font-bold text-ios-blue">{messages.length}</span>
+            <span className="text-ios-gray-600">messages</span>
           </div>
         </div>
       </motion.div>
@@ -133,18 +133,18 @@ export default function AIPlaygroundPage() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="h-16 border-b border-gold-500/20 flex items-center justify-between px-6 bg-arcyn-surface/50 backdrop-blur">
+        <div className="h-16 border-b border-arcyn-border flex items-center justify-between px-6 glass">
           <div>
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-ios-gray-900">
               {modes.find(m => m.id === mode)?.name}
             </h2>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-ios-gray-600">
               {modes.find(m => m.id === mode)?.description}
             </p>
           </div>
           <button
             onClick={clearChat}
-            className="px-4 py-2 bg-arcyn-bg border border-gold-500/20 rounded-lg text-sm text-gray-400 hover:text-white hover:border-gold-500/40 transition-all"
+            className="px-4 py-2 bg-white border border-arcyn-border rounded-lg text-sm text-ios-gray-700 hover:text-ios-gray-900 hover:border-ios-blue transition-all shadow-ios-sm"
           >
             Clear Chat
           </button>
@@ -158,14 +158,13 @@ export default function AIPlaygroundPage() {
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                  className="w-24 h-24 bg-gradient-to-br from-gold-400 to-gold-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-gold-glow-lg"
-                >
-                  <Bot className="w-12 h-12 text-black" />
+                  className="w-24 h-24 bg-gradient-to-br from-ios-blue to-ios-blue-light rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-ios-lg">
+                  <Bot className="w-12 h-12 text-white" />
                 </motion.div>
-                <h3 className="text-2xl font-display font-bold text-white mb-2">
+                <h3 className="text-2xl font-display font-bold text-ios-gray-900 mb-2">
                   Start a Conversation
                 </h3>
-                <p className="text-gray-400">
+                <p className="text-ios-gray-600">
                   {mode === 'chat' && 'Ask me anything! I\'m here to help with your questions.'}
                   {mode === 'code' && 'Paste your code and ask for help, explanations, or improvements.'}
                   {mode === 'document' && 'Paste document text for analysis, insights, and summaries.'}
@@ -186,14 +185,14 @@ export default function AIPlaygroundPage() {
                     <div
                       className={`max-w-[80%] p-4 rounded-2xl ${
                         message.role === 'user'
-                          ? 'bg-gradient-to-br from-gold-500 to-gold-600 text-black'
-                          : 'bg-arcyn-surface text-white border border-gold-500/20'
+                          ? 'bg-ios-blue text-white shadow-ios-md'
+                          : 'glass-card text-ios-gray-900'
                       }`}
                     >
                       {message.role === 'assistant' && (
                         <div className="flex items-center gap-2 mb-2">
-                          <Bot className="w-4 h-4 text-gold-500" />
-                          <span className="text-xs text-gray-400 font-semibold">Claude AI</span>
+                          <Bot className="w-4 h-4 text-ios-blue" />
+                          <span className="text-xs text-ios-gray-600 font-semibold">Claude AI</span>
                         </div>
                       )}
                       <p className="whitespace-pre-wrap break-words">{message.content}</p>
@@ -208,10 +207,10 @@ export default function AIPlaygroundPage() {
                   animate={{ opacity: 1 }}
                   className="flex justify-start"
                 >
-                  <div className="bg-arcyn-surface p-4 rounded-2xl border border-gold-500/20">
+                  <div className="glass-card p-4 rounded-2xl">
                     <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 text-gold-500 animate-spin" />
-                      <span className="text-sm text-gray-400">Claude is thinking...</span>
+                      <Loader2 className="w-4 h-4 text-ios-blue animate-spin" />
+                      <span className="text-sm text-ios-gray-600">Claude is thinking...</span>
                     </div>
                   </div>
                 </motion.div>
@@ -221,7 +220,7 @@ export default function AIPlaygroundPage() {
         </div>
 
         {/* Input Area */}
-        <div className="p-6 bg-arcyn-surface border-t border-gold-500/20">
+        <div className="p-6 glass border-t border-arcyn-border">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-end gap-3">
               <textarea
@@ -236,7 +235,7 @@ export default function AIPlaygroundPage() {
                     : 'Type your message...'
                 }
                 disabled={loading}
-                className="flex-1 px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white placeholder-gray-500 resize-none max-h-40 transition-all disabled:opacity-50"
+                className="flex-1 px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 resize-none max-h-40 transition-all disabled:opacity-50 shadow-ios-inner"
                 rows={3}
               />
               <motion.button
@@ -244,16 +243,16 @@ export default function AIPlaygroundPage() {
                 whileTap={{ scale: 0.95 }}
                 onClick={handleSubmit}
                 disabled={loading || !input.trim()}
-                className="p-4 bg-gradient-to-r from-gold-500 to-gold-600 rounded-xl hover:shadow-gold-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-4 bg-ios-blue rounded-xl hover:bg-ios-blue/90 shadow-ios-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <Loader2 className="w-6 h-6 text-black animate-spin" />
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
                 ) : (
-                  <Send className="w-6 h-6 text-black" />
+                  <Send className="w-6 h-6 text-white" />
                 )}
               </motion.button>
             </div>
-            <p className="text-xs text-gray-400 mt-2 text-center">
+            <p className="text-xs text-ios-gray-500 mt-2 text-center">
               Press Enter to send, Shift+Enter for new line
             </p>
           </div>
