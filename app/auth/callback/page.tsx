@@ -53,9 +53,9 @@ export default function AuthCallbackPage() {
           const fullName = searchParams.get('fullName')
           const branch = searchParams.get('branch')
 
-          const { error: createError } = await supabase.from('profiles').insert({
+          // Prepare profile data
+          const profileData: any = {
             id: session.user.id,
-            email: session.user.email!,
             full_name: fullName || session.user.user_metadata?.full_name || 'User',
             username: username || session.user.user_metadata?.username || `user_${session.user.id.slice(0, 8)}`,
             branch: (branch as any) || session.user.user_metadata?.branch || 'modulex',
@@ -63,7 +63,14 @@ export default function AuthCallbackPage() {
             login_streak: 1,
             last_login: new Date().toISOString(),
             is_online: true,
-          })
+          }
+          
+          // Add email if available
+          if (session.user.email) {
+            profileData.email = session.user.email
+          }
+          
+          const { error: createError } = await supabase.from('profiles').insert(profileData)
 
           if (createError) {
             console.error('❌ Profile creation error:', createError)

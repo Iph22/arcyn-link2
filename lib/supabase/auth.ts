@@ -107,10 +107,9 @@ export async function signIn({ email, password }: { email: string; password: str
     if (!profile) {
       console.log('⚠️ Profile not found - attempting to create...')
       
-      // Prepare profile data
-      const profileData = {
+      // Prepare profile data (only include fields that exist in your schema)
+      const profileData: any = {
         id: data.user.id,
-        email: data.user.email!,
         full_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
         username: data.user.user_metadata?.username || `user_${data.user.id.slice(0, 8)}`,
         branch: data.user.user_metadata?.branch || 'modulex',
@@ -118,6 +117,11 @@ export async function signIn({ email, password }: { email: string; password: str
         login_streak: 1,
         last_login: new Date().toISOString(),
         is_online: true,
+      }
+      
+      // Add email if column exists (check your profiles table schema)
+      if (data.user.email) {
+        profileData.email = data.user.email
       }
 
       console.log('📝 Attempting to insert profile:', profileData)
