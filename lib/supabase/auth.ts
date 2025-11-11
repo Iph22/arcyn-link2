@@ -107,11 +107,17 @@ export async function signIn({ email, password }: { email: string; password: str
     if (!profile) {
       console.log('⚠️ Profile not found - attempting to create...')
       
-      // Prepare profile data (only include fields that exist in your schema)
+      // Prepare profile data with ONLY essential fields
+      // Start with minimum required fields
       const profileData: any = {
         id: data.user.id,
-        full_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
         username: data.user.user_metadata?.username || `user_${data.user.id.slice(0, 8)}`,
+        full_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
+      }
+      
+      // Add optional fields that might exist
+      const optionalFields: any = {
+        email: data.user.email,
         branch: data.user.user_metadata?.branch || 'modulex',
         total_logins: 1,
         login_streak: 1,
@@ -119,10 +125,8 @@ export async function signIn({ email, password }: { email: string; password: str
         is_online: true,
       }
       
-      // Add email if column exists (check your profiles table schema)
-      if (data.user.email) {
-        profileData.email = data.user.email
-      }
+      // Merge optional fields
+      Object.assign(profileData, optionalFields)
 
       console.log('📝 Attempting to insert profile:', profileData)
 
