@@ -37,7 +37,9 @@ export default function ChannelsPage() {
         setChannels(data.map(m => m.channel).filter(Boolean))
       }
     } catch (error) {
-      console.error('Error loading channels:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading channels:', error)
+      }
     } finally {
       setLoading(false)
     }

@@ -14,7 +14,10 @@ export default function ConfirmEmailPage() {
   const [resending, setResending] = useState(false)
 
   const handleResendEmail = async () => {
-    if (!email) return
+    if (!email) {
+      toast.error('Email address is required')
+      return
+    }
 
     setResending(true)
     try {
@@ -23,10 +26,21 @@ export default function ConfirmEmailPage() {
         email: email,
       })
 
-      if (error) throw error
-      toast.success('Confirmation email sent!')
+      if (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Resend email error:', error)
+        }
+        throw error
+      }
+      
+      toast.success('Confirmation email sent! Check your inbox.')
     } catch (error: any) {
-      toast.error('Failed to resend email')
+      const errorMessage = error?.message || 'Failed to resend email'
+      toast.error(errorMessage)
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to resend email:', error)
+      }
     } finally {
       setResending(false)
     }
@@ -62,7 +76,7 @@ export default function ConfirmEmailPage() {
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 50, damping: 20 }}
-        className="relative z-10 w-full max-w-md p-8 bg-arcyn-surface/80 backdrop-blur-xl rounded-3xl border border-gold-500/20 shadow-gold-glow-lg mx-4"
+        className="relative z-10 w-full max-w-md p-8 bg-white backdrop-blur-xl rounded-3xl border border-arcyn-border shadow-ios-xl mx-4"
       >
         {/* Email Icon */}
         <motion.div
@@ -71,8 +85,8 @@ export default function ConfirmEmailPage() {
           transition={{ delay: 0.2, type: 'spring' }}
           className="flex justify-center mb-6"
         >
-          <div className="w-24 h-24 bg-gradient-to-br from-gold-400 to-gold-600 rounded-3xl flex items-center justify-center shadow-gold-glow animate-pulse">
-            <Mail className="w-12 h-12 text-black" />
+          <div className="w-24 h-24 bg-gradient-to-br from-ios-blue to-ios-blue-light rounded-3xl flex items-center justify-center shadow-ios-lg">
+            <Mail className="w-12 h-12 text-white" />
           </div>
         </motion.div>
 
@@ -80,7 +94,7 @@ export default function ConfirmEmailPage() {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="text-3xl font-display font-bold text-center bg-gradient-to-r from-gold-400 to-gold-600 bg-clip-text text-transparent mb-2"
+          className="text-3xl font-display font-bold text-center bg-gradient-to-r from-ios-blue to-ios-blue-light bg-clip-text text-transparent mb-2"
         >
           Check Your Email
         </motion.h1>
@@ -89,7 +103,7 @@ export default function ConfirmEmailPage() {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="text-center text-gray-400 mb-2"
+          className="text-center text-ios-gray-600 mb-2"
         >
           We've sent a confirmation link to
         </motion.p>
@@ -98,7 +112,7 @@ export default function ConfirmEmailPage() {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-center text-gold-500 font-semibold mb-6"
+          className="text-center text-ios-blue font-semibold mb-6"
         >
           {email}
         </motion.p>
@@ -107,11 +121,11 @@ export default function ConfirmEmailPage() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="bg-arcyn-bg rounded-xl p-4 mb-6 border border-gold-500/20"
+          className="bg-white rounded-xl p-4 mb-6 border border-arcyn-border shadow-ios-inner"
         >
-          <p className="text-sm text-gray-300 mb-2">📧 Check your inbox and spam folder</p>
-          <p className="text-sm text-gray-300 mb-2">🔗 Click the confirmation link</p>
-          <p className="text-sm text-gray-300">✨ You'll be redirected to your dashboard</p>
+          <p className="text-sm text-ios-gray-700 mb-2">📧 Check your inbox and spam folder</p>
+          <p className="text-sm text-ios-gray-700 mb-2">🔗 Click the confirmation link</p>
+          <p className="text-sm text-ios-gray-700">✨ You'll be redirected to your dashboard</p>
         </motion.div>
 
         {/* Resend Button */}
@@ -123,7 +137,7 @@ export default function ConfirmEmailPage() {
           whileTap={{ scale: 0.95 }}
           onClick={handleResendEmail}
           disabled={resending}
-          className="w-full py-3 bg-arcyn-bg border border-gold-500/20 text-gold-500 font-semibold rounded-xl hover:border-gold-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-3 bg-white border border-ios-blue/30 text-ios-blue font-semibold rounded-xl hover:border-ios-blue hover:bg-ios-blue/5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           <RefreshCw className={`w-5 h-5 ${resending ? 'animate-spin' : ''}`} />
           {resending ? 'Sending...' : 'Resend Email'}
@@ -134,9 +148,9 @@ export default function ConfirmEmailPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="text-center text-gray-400 mt-6"
+          className="text-center text-ios-gray-600 mt-6"
         >
-          <Link href="/signin" className="text-gold-500 hover:text-gold-400 transition-colors font-semibold">
+          <Link href="/signin" className="text-ios-blue hover:text-ios-blue/80 transition-colors font-semibold">
             ← Back to Sign In
           </Link>
         </motion.p>

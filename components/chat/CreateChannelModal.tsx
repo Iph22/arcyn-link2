@@ -61,7 +61,9 @@ export default function CreateChannelModal({ onClose, onSuccess }: CreateChannel
 
       onSuccess(channel)
     } catch (error: any) {
-      console.error('Error creating channel:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error creating channel:', error)
+      }
       toast.error(error.message || 'Failed to create channel')
     } finally {
       setCreating(false)

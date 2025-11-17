@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase/client'
 import { getCurrentUser } from '@/lib/supabase/auth'
 import { uploadFile, formatFileSize } from '@/lib/storage/fileUpload'
 import { analyzeDocument } from '@/lib/ai/claude'
+import { isValidFileType, isValidFileSize } from '@/lib/utils/validation'
 import FileUploader from '@/components/files/FileUploader'
 import toast from 'react-hot-toast'
 
@@ -36,19 +37,21 @@ export default function ResearchLibraryPage() {
         setDocuments(data)
       }
     } catch (error) {
-      console.error('Error loading documents:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading documents:', error)
+      }
     } finally {
       setLoading(false)
     }
   }
 
-  async function handleFileUpload(file: File) {
+  async function handleFileUpload(fileData: any) {
     try {
       const user = await getCurrentUser()
       if (!user) return
 
-      // Upload file to storage
-      const uploadedFile = await uploadFile(file)
+      // File is already uploaded by FileUploader component
+      const uploadedFile = fileData
 
       // Save document metadata to database
       const { error } = await supabase

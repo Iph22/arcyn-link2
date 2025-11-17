@@ -15,24 +15,32 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        console.log('🔄 Processing auth callback...')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 Processing auth callback...')
+        }
         
         // Get the current session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
         if (sessionError) {
-          console.error('❌ Session error:', sessionError)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('❌ Session error:', sessionError)
+          }
           router.push('/signin?error=session_failed')
           return
         }
 
         if (!session?.user) {
-          console.log('⚠️ No session found, redirecting to signin...')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⚠️ No session found, redirecting to signin...')
+          }
           router.push('/signin')
           return
         }
 
-        console.log('✅ Session found for user:', session.user.email)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Session found for user:', session.user.email)
+        }
 
         // Check if profile exists
         const { data: existingProfile, error: fetchError } = await supabase
@@ -42,12 +50,16 @@ export default function AuthCallbackPage() {
           .maybeSingle()
 
         if (fetchError) {
-          console.error('❌ Error checking profile:', fetchError)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('❌ Error checking profile:', fetchError)
+          }
         }
 
-        // Create profile if it doesn't exist
+        // Create profile if it doesn't exist (handle 409 conflict gracefully)
         if (!existingProfile) {
-          console.log('📝 Creating profile for new user...')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📝 Creating profile for new user...')
+          }
           
           const username = searchParams.get('username')
           const fullName = searchParams.get('fullName')
@@ -73,22 +85,41 @@ export default function AuthCallbackPage() {
           const { error: createError } = await supabase.from('profiles').insert(profileData)
 
           if (createError) {
-            console.error('❌ Profile creation error:', createError)
-            router.push('/signin?error=profile_creation_failed')
-            return
+            // Handle 409 conflict (profile already exists from trigger)
+            if (createError.code === '23505' || createError.message?.includes('duplicate') || createError.message?.includes('409')) {
+              if (process.env.NODE_ENV === 'development') {
+                console.log('⚠️ Profile already exists (likely created by trigger), continuing...')
+              }
+              // Profile already exists, continue to dashboard
+            } else {
+              if (process.env.NODE_ENV === 'development') {
+                console.error('❌ Profile creation error:', createError)
+              }
+              // Only redirect on non-conflict errors
+              router.push('/signin?error=profile_creation_failed')
+              return
+            }
+          } else {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('✅ Profile created successfully!')
+            }
           }
-
-          console.log('✅ Profile created successfully!')
         } else {
-          console.log('✅ Profile already exists')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ Profile already exists')
+          }
         }
 
         // Success! Redirect to dashboard
-        console.log('🎉 Redirecting to dashboard...')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🎉 Redirecting to dashboard...')
+        }
         router.push('/dashboard')
         
       } catch (error) {
-        console.error('💥 Callback error:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('💥 Callback error:', error)
+        }
         router.push('/signin?error=callback_failed')
       }
     }

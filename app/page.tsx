@@ -1,19 +1,43 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { supabase } from '@/lib/supabase/client'
 
 export default function HomePage() {
   const router = useRouter()
+  const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    // Redirect to signin after animation
-    const timer = setTimeout(() => {
-      router.push('/signin')
-    }, 3000)
+    const checkSession = async () => {
+      try {
+        // Check if user is already logged in
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (session?.user) {
+          // User is logged in, redirect to dashboard immediately
+          router.push('/dashboard')
+          return
+        }
+        
+        // No session, redirect to signin after animation
+        setChecking(false)
+        const timer = setTimeout(() => {
+          router.push('/signin')
+        }, 2000)
 
-    return () => clearTimeout(timer)
+        return () => clearTimeout(timer)
+      } catch (error) {
+        // On error, redirect to signin
+        setChecking(false)
+        setTimeout(() => {
+          router.push('/signin')
+        }, 2000)
+      }
+    }
+
+    checkSession()
   }, [router])
 
   return (

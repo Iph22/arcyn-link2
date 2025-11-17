@@ -5,6 +5,8 @@ import { motion } from 'framer-motion'
 import { User, Bell, Lock, Palette, Globe, Save, Loader2, MessageSquare, Shield } from 'lucide-react'
 import { getCurrentUser } from '@/lib/supabase/auth'
 import { supabase } from '@/lib/supabase/client'
+import { sanitizeUserInput } from '@/lib/utils/sanitize'
+import { isValidUsername } from '@/lib/utils/validation'
 import toast from 'react-hot-toast'
 import AvatarUpload from '@/components/settings/AvatarUpload'
 import PasswordChange from '@/components/settings/PasswordChange'
@@ -78,13 +80,24 @@ export default function SettingsPage() {
         language: user.language || 'en',
       })
     } catch (error) {
-      console.error('Error loading profile:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading profile:', error)
+      }
     } finally {
       setLoading(false)
     }
   }
 
   async function saveSettings() {
+    // Validate username if changed
+    if (settings.username && settings.username !== profile?.username) {
+      const usernameValidation = isValidUsername(settings.username)
+      if (!usernameValidation.valid) {
+        toast.error(usernameValidation.errors[0])
+        return
+      }
+    }
+
     setSaving(true)
     try {
       const user = await getCurrentUser()
@@ -93,12 +106,12 @@ export default function SettingsPage() {
       const { error } = await supabase
         .from('profiles')
         .update({
-          full_name: settings.fullName,
-          username: settings.username,
-          bio: settings.bio,
-          department: settings.department,
-          position: settings.position,
-          status_message: settings.statusMessage,
+          full_name: sanitizeUserInput(settings.fullName.trim(), 100),
+          username: sanitizeUserInput(settings.username.trim(), 30),
+          bio: sanitizeUserInput(settings.bio.trim(), 500),
+          department: sanitizeUserInput(settings.department.trim(), 100),
+          position: sanitizeUserInput(settings.position.trim(), 100),
+          status_message: sanitizeUserInput(settings.statusMessage.trim(), 100),
           notifications_enabled: settings.notificationsEnabled,
           email_notifications: settings.emailNotifications,
           push_notifications: settings.pushNotifications,
@@ -117,6 +130,8 @@ export default function SettingsPage() {
       if (error) throw error
 
       toast.success('Settings saved successfully!')
+      // Reload profile to reflect changes
+      loadProfile()
     } catch (error: any) {
       toast.error(error.message || 'Failed to save settings')
     } finally {
@@ -154,8 +169,8 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-display font-bold text-white mb-2">Settings</h1>
-          <p className="text-gray-400">Manage your account and preferences</p>
+          <h1 className="text-4xl font-display font-bold text-ios-gray-900 mb-2">Settings</h1>
+          <p className="text-ios-gray-600">Manage your account and preferences</p>
         </motion.div>
 
         <div className="flex gap-6">
@@ -163,7 +178,7 @@ export default function SettingsPage() {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="w-64 bg-arcyn-surface rounded-2xl border border-gold-500/20 p-4"
+            className="w-64 bg-arcyn-surface rounded-2xl border border-arcyn-border p-4 shadow-ios"
           >
             <div className="space-y-1">
               {tabs.map((tab) => (
@@ -172,8 +187,8 @@ export default function SettingsPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     activeTab === tab.id
-                      ? 'bg-gold-500/20 text-gold-400'
-                      : 'text-gray-400 hover:text-white hover:bg-arcyn-bg'
+                      ? 'bg-ios-blue/10 text-ios-blue border border-ios-blue/20'
+                      : 'text-ios-gray-600 hover:text-ios-gray-900 hover:bg-arcyn-bg'
                   }`}
                 >
                   <tab.icon className="w-5 h-5" />
@@ -192,7 +207,7 @@ export default function SettingsPage() {
             {/* Account Settings */}
             {activeTab === 'account' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-white mb-6">Account Settings</h2>
+                <h2 className="text-2xl font-bold text-ios-gray-900 mb-6">Account Settings</h2>
 
                 {/* Avatar Upload */}
                 {profile && (
@@ -209,87 +224,93 @@ export default function SettingsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Full Name</label>
+                    <label className="block text-sm font-medium text-ios-gray-700 mb-2">Full Name</label>
                     <input
                       type="text"
                       value={settings.fullName}
                       onChange={(e) => setSettings({ ...settings, fullName: e.target.value })}
-                      className="w-full px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white transition-all"
+                      className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all shadow-ios-inner"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Username</label>
-                    <input
-                      type="text"
-                      value={settings.username}
-                      onChange={(e) => setSettings({ ...settings, username: e.target.value })}
-                      className="w-full px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white transition-all"
-                    />
+                    <label className="block text-sm font-medium text-ios-gray-700 mb-2">Username</label>
+                  <input
+                    type="text"
+                    value={settings.username}
+                    onChange={(e) => setSettings({ ...settings, username: e.target.value })}
+                    className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all shadow-ios-inner"
+                    aria-label="Username"
+                    maxLength={30}
+                  />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-ios-gray-700 mb-2">Email</label>
                   <input
                     type="email"
                     value={settings.email}
                     disabled
-                    className="w-full px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl text-gray-500 cursor-not-allowed"
+                    className="w-full px-4 py-3 bg-ios-gray-50 border border-arcyn-border rounded-xl text-ios-gray-500 cursor-not-allowed"
+                    aria-label="Email (read-only)"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                  <p className="text-xs text-ios-gray-500 mt-1">Email cannot be changed</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Bio</label>
+                  <label className="block text-sm font-medium text-ios-gray-700 mb-2">Bio</label>
                   <textarea
                     value={settings.bio}
                     onChange={(e) => setSettings({ ...settings, bio: e.target.value })}
                     rows={3}
-                    className="w-full px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white resize-none transition-all"
+                    className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 resize-none transition-all shadow-ios-inner"
                     placeholder="Tell us about yourself..."
+                    aria-label="Bio"
+                    maxLength={500}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Department</label>
+                    <label className="block text-sm font-medium text-ios-gray-700 mb-2">Department</label>
                     <input
                       type="text"
                       value={settings.department}
                       onChange={(e) => setSettings({ ...settings, department: e.target.value })}
-                      className="w-full px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white transition-all"
+                      className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all shadow-ios-inner"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Position</label>
+                    <label className="block text-sm font-medium text-ios-gray-700 mb-2">Position</label>
                     <input
                       type="text"
                       value={settings.position}
                       onChange={(e) => setSettings({ ...settings, position: e.target.value })}
-                      className="w-full px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white transition-all"
+                      className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all shadow-ios-inner"
                     />
                   </div>
                 </div>
 
                 {/* Status Message */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                  <label className="block text-sm font-medium text-ios-gray-700 mb-2">
                     Status Message
                   </label>
                   <div className="flex gap-2">
-                    <MessageSquare className="w-5 h-5 text-gray-400 mt-3" />
+                    <MessageSquare className="w-5 h-5 text-ios-gray-500 mt-3" />
                     <input
                       type="text"
                       value={settings.statusMessage}
                       onChange={(e) => setSettings({ ...settings, statusMessage: e.target.value })}
                       placeholder="What's on your mind?"
                       maxLength={100}
-                      className="flex-1 px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white transition-all"
+                      className="flex-1 px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all shadow-ios-inner"
+                      aria-label="Status message"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">This will be visible to other users</p>
+                  <p className="text-xs text-ios-gray-500 mt-1">This will be visible to other users</p>
                 </div>
               </div>
             )}
@@ -297,7 +318,7 @@ export default function SettingsPage() {
             {/* Security Settings */}
             {activeTab === 'security' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-white mb-6">Security Settings</h2>
+                <h2 className="text-2xl font-bold text-ios-gray-900 mb-6">Security Settings</h2>
 
                 {/* Password Change */}
                 <PasswordChange />
@@ -312,7 +333,7 @@ export default function SettingsPage() {
             {/* Notification Settings */}
             {activeTab === 'notifications' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-white mb-6">Notification Settings</h2>
+                <h2 className="text-2xl font-bold text-ios-gray-900 mb-6">Notification Settings</h2>
 
                 <div className="space-y-4">
                   <ToggleSetting
@@ -337,7 +358,7 @@ export default function SettingsPage() {
                   />
 
                   <div className="border-t border-gold-500/10 pt-4 mt-4">
-                    <p className="text-sm font-semibold text-gray-400 mb-4">Notification Types</p>
+                    <p className="text-sm font-semibold text-ios-gray-700 mb-4">Notification Types</p>
                     
                     <ToggleSetting
                       label="Messages"
@@ -367,54 +388,54 @@ export default function SettingsPage() {
             {/* Privacy Settings */}
             {activeTab === 'privacy' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-white mb-6">Privacy Settings</h2>
+                <h2 className="text-2xl font-bold text-ios-gray-900 mb-6">Privacy Settings</h2>
 
                 {/* Profile Visibility */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-3">
+                  <label className="block text-sm font-medium text-ios-gray-700 mb-3">
                     Who can see your profile?
                   </label>
                   <div className="space-y-2">
-                    <label className="flex items-center gap-3 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+                    <label className="flex items-center gap-3 p-4 bg-white rounded-xl border border-arcyn-border cursor-pointer hover:border-ios-blue/40 transition-all shadow-ios-inner">
                       <input
                         type="radio"
                         name="profileVisibility"
                         value="everyone"
                         checked={settings.profileVisibility === 'everyone'}
                         onChange={(e) => setSettings({ ...settings, profileVisibility: e.target.value })}
-                        className="w-4 h-4 text-gold-500"
+                        className="w-4 h-4 text-ios-blue"
                       />
                       <div>
-                        <p className="font-semibold text-white">Everyone</p>
-                        <p className="text-xs text-gray-400">Anyone can view your profile</p>
+                        <p className="font-semibold text-ios-gray-900">Everyone</p>
+                        <p className="text-xs text-ios-gray-600">Anyone can view your profile</p>
                       </div>
                     </label>
-                    <label className="flex items-center gap-3 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+                    <label className="flex items-center gap-3 p-4 bg-white rounded-xl border border-arcyn-border cursor-pointer hover:border-ios-blue/40 transition-all shadow-ios-inner">
                       <input
                         type="radio"
                         name="profileVisibility"
                         value="team"
                         checked={settings.profileVisibility === 'team'}
                         onChange={(e) => setSettings({ ...settings, profileVisibility: e.target.value })}
-                        className="w-4 h-4 text-gold-500"
+                        className="w-4 h-4 text-ios-blue"
                       />
                       <div>
-                        <p className="font-semibold text-white">Team Only</p>
-                        <p className="text-xs text-gray-400">Only members of your branch can view</p>
+                        <p className="font-semibold text-ios-gray-900">Team Only</p>
+                        <p className="text-xs text-ios-gray-600">Only members of your branch can view</p>
                       </div>
                     </label>
-                    <label className="flex items-center gap-3 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+                    <label className="flex items-center gap-3 p-4 bg-white rounded-xl border border-arcyn-border cursor-pointer hover:border-ios-blue/40 transition-all shadow-ios-inner">
                       <input
                         type="radio"
                         name="profileVisibility"
                         value="private"
                         checked={settings.profileVisibility === 'private'}
                         onChange={(e) => setSettings({ ...settings, profileVisibility: e.target.value })}
-                        className="w-4 h-4 text-gold-500"
+                        className="w-4 h-4 text-ios-blue"
                       />
                       <div>
-                        <p className="font-semibold text-white">Private</p>
-                        <p className="text-xs text-gray-400">Only you can view your profile</p>
+                        <p className="font-semibold text-ios-gray-900">Private</p>
+                        <p className="text-xs text-ios-gray-600">Only you can view your profile</p>
                       </div>
                     </label>
                   </div>
@@ -422,50 +443,50 @@ export default function SettingsPage() {
 
                 {/* Messaging Privacy */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-3">
+                  <label className="block text-sm font-medium text-ios-gray-700 mb-3">
                     Who can send you messages?
                   </label>
                   <div className="space-y-2">
-                    <label className="flex items-center gap-3 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+                    <label className="flex items-center gap-3 p-4 bg-white rounded-xl border border-arcyn-border cursor-pointer hover:border-ios-blue/40 transition-all shadow-ios-inner">
                       <input
                         type="radio"
                         name="whoCanMessage"
                         value="everyone"
                         checked={settings.whoCanMessage === 'everyone'}
                         onChange={(e) => setSettings({ ...settings, whoCanMessage: e.target.value })}
-                        className="w-4 h-4 text-gold-500"
+                        className="w-4 h-4 text-ios-blue"
                       />
                       <div>
-                        <p className="font-semibold text-white">Everyone</p>
-                        <p className="text-xs text-gray-400">Anyone can message you</p>
+                        <p className="font-semibold text-ios-gray-900">Everyone</p>
+                        <p className="text-xs text-ios-gray-600">Anyone can message you</p>
                       </div>
                     </label>
-                    <label className="flex items-center gap-3 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+                    <label className="flex items-center gap-3 p-4 bg-white rounded-xl border border-arcyn-border cursor-pointer hover:border-ios-blue/40 transition-all shadow-ios-inner">
                       <input
                         type="radio"
                         name="whoCanMessage"
                         value="team"
                         checked={settings.whoCanMessage === 'team'}
                         onChange={(e) => setSettings({ ...settings, whoCanMessage: e.target.value })}
-                        className="w-4 h-4 text-gold-500"
+                        className="w-4 h-4 text-ios-blue"
                       />
                       <div>
-                        <p className="font-semibold text-white">Team Only</p>
-                        <p className="text-xs text-gray-400">Only team members can message you</p>
+                        <p className="font-semibold text-ios-gray-900">Team Only</p>
+                        <p className="text-xs text-ios-gray-600">Only team members can message you</p>
                       </div>
                     </label>
-                    <label className="flex items-center gap-3 p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+                    <label className="flex items-center gap-3 p-4 bg-white rounded-xl border border-arcyn-border cursor-pointer hover:border-ios-blue/40 transition-all shadow-ios-inner">
                       <input
                         type="radio"
                         name="whoCanMessage"
                         value="none"
                         checked={settings.whoCanMessage === 'none'}
                         onChange={(e) => setSettings({ ...settings, whoCanMessage: e.target.value })}
-                        className="w-4 h-4 text-gold-500"
+                        className="w-4 h-4 text-ios-blue"
                       />
                       <div>
-                        <p className="font-semibold text-white">No One</p>
-                        <p className="text-xs text-gray-400">Disable direct messages</p>
+                        <p className="font-semibold text-ios-gray-900">No One</p>
+                        <p className="text-xs text-ios-gray-600">Disable direct messages</p>
                       </div>
                     </label>
                   </div>
@@ -493,34 +514,36 @@ export default function SettingsPage() {
             {/* Appearance Settings */}
             {activeTab === 'appearance' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-white mb-6">Appearance</h2>
+                <h2 className="text-2xl font-bold text-ios-gray-900 mb-6">Appearance</h2>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-3">Theme</label>
+                  <label className="block text-sm font-medium text-ios-gray-700 mb-3">Theme</label>
                   <div className="grid grid-cols-2 gap-4">
                     <button
                       onClick={() => setSettings({ ...settings, theme: 'dark' })}
                       className={`p-4 rounded-xl border-2 transition-all ${
                         settings.theme === 'dark'
-                          ? 'border-gold-500 bg-gold-500/10'
-                          : 'border-gold-500/20 hover:border-gold-500/40'
+                          ? 'border-ios-blue bg-ios-blue/10'
+                          : 'border-arcyn-border hover:border-ios-blue/40'
                       }`}
                     >
-                      <div className="w-full h-24 bg-arcyn-bg rounded-lg mb-3" />
-                      <p className="font-semibold text-white">Dark</p>
+                      <div className="w-full h-24 bg-ios-gray-900 rounded-lg mb-3" />
+                      <p className="font-semibold text-ios-gray-900">Dark</p>
                     </button>
 
                     <button
                       onClick={() => setSettings({ ...settings, theme: 'light' })}
                       className={`p-4 rounded-xl border-2 transition-all ${
                         settings.theme === 'light'
-                          ? 'border-gold-500 bg-gold-500/10'
-                          : 'border-gold-500/20 hover:border-gold-500/40'
+                          ? 'border-ios-blue bg-ios-blue/10'
+                          : 'border-arcyn-border hover:border-ios-blue/40'
                       }`}
+                      aria-label="Light theme"
+                      aria-pressed={settings.theme === 'light'}
                     >
-                      <div className="w-full h-24 bg-gray-200 rounded-lg mb-3" />
-                      <p className="font-semibold text-white">Light</p>
-                      <p className="text-xs text-gray-400 mt-1">Coming soon</p>
+                      <div className="w-full h-24 bg-ios-gray-50 rounded-lg mb-3" />
+                      <p className="font-semibold text-ios-gray-900">Light</p>
+                      <p className="text-xs text-ios-gray-500 mt-1">Coming soon</p>
                     </button>
                   </div>
                 </div>
@@ -530,14 +553,14 @@ export default function SettingsPage() {
             {/* Language Settings */}
             {activeTab === 'language' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-white mb-6">Language & Region</h2>
+                <h2 className="text-2xl font-bold text-ios-gray-900 mb-6">Language & Region</h2>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Language</label>
+                  <label className="block text-sm font-medium text-ios-gray-700 mb-2">Language</label>
                   <select
                     value={settings.language}
                     onChange={(e) => setSettings({ ...settings, language: e.target.value })}
-                    className="w-full px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white transition-all"
+                    className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 transition-all shadow-ios-inner"
                   >
                     <option value="en">English</option>
                     <option value="fr">Français</option>
@@ -555,7 +578,7 @@ export default function SettingsPage() {
                 whileTap={{ scale: 0.98 }}
                 onClick={saveSettings}
                 disabled={saving}
-                className="px-6 py-3 bg-gradient-to-r from-gold-500 to-gold-600 text-black font-bold rounded-xl hover:shadow-gold-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-6 py-3 bg-ios-blue text-white font-bold rounded-xl hover:bg-ios-blue/90 shadow-ios-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {saving ? (
                   <>
@@ -586,13 +609,13 @@ function ToggleSetting({ label, description, checked, onChange }: {
   return (
     <div className="flex items-center justify-between py-3">
       <div>
-        <p className="font-semibold text-white">{label}</p>
-        <p className="text-sm text-gray-400">{description}</p>
+        <p className="font-semibold text-ios-gray-900">{label}</p>
+        <p className="text-sm text-ios-gray-600">{description}</p>
       </div>
       <button
         onClick={() => onChange(!checked)}
         className={`relative w-12 h-6 rounded-full transition-colors ${
-          checked ? 'bg-gold-500' : 'bg-gray-600'
+          checked ? 'bg-ios-blue' : 'bg-ios-gray-300'
         }`}
       >
         <motion.div

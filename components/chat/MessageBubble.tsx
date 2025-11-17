@@ -41,16 +41,16 @@ export default function MessageBubble({
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-1 px-3 py-2 bg-black/30 rounded-t-xl border-l-2 border-gold-500"
+            className="mb-1 px-3 py-2 bg-ios-gray-100 rounded-t-xl border-l-2 border-ios-blue"
           >
-            <p className="text-xs text-gray-400">{message.reply_to.sender?.full_name}</p>
-            <p className="text-sm text-gray-300 truncate">{message.reply_to.content}</p>
+            <p className="text-xs text-ios-gray-600">{message.reply_to.sender?.full_name}</p>
+            <p className="text-sm text-ios-gray-700 truncate">{message.reply_to.content}</p>
           </motion.div>
         )}
 
         {/* Sender Name (for others' messages) */}
         {!isOwn && (
-          <p className="text-xs text-gray-400 mb-1 px-2">{message.sender?.full_name}</p>
+          <p className="text-xs text-ios-gray-600 mb-1 px-2">{message.sender?.full_name}</p>
         )}
 
         {/* Message Content */}
@@ -59,12 +59,12 @@ export default function MessageBubble({
           animate={{ opacity: 1, scale: 1 }}
           className={`px-4 py-3 rounded-2xl ${
             isOwn
-              ? 'bg-gradient-to-br from-gold-500 to-gold-600 text-black'
-              : 'bg-arcyn-surface text-white border border-gold-500/20'
+              ? 'bg-gradient-to-br from-ios-blue to-ios-blue-light text-white'
+              : 'bg-white text-ios-gray-900 border border-arcyn-border shadow-ios-inner'
           } ${message.reply_to ? 'rounded-tl-none' : ''}`}
         >
           {message.is_deleted ? (
-            <p className="italic text-gray-400">This message was deleted</p>
+            <p className="italic text-ios-gray-500">This message was deleted</p>
           ) : (
             <>
               {/* File/Image Preview */}
@@ -75,16 +75,17 @@ export default function MessageBubble({
                       src={message.file_url}
                       alt="Attachment"
                       className="rounded-lg max-w-full h-auto"
+                      loading="lazy"
                     />
                   ) : (
-                    <div className="flex items-center gap-2 p-2 bg-black/20 rounded-lg">
-                      <div className="w-10 h-10 bg-gold-500/20 rounded-lg flex items-center justify-center">
+                    <div className="flex items-center gap-2 p-2 bg-ios-gray-50 rounded-lg">
+                      <div className="w-10 h-10 bg-ios-blue/10 rounded-lg flex items-center justify-center">
                         📎
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium">{message.file_name}</p>
-                        <p className="text-xs opacity-70">
-                          {(message.file_size / 1024).toFixed(1)} KB
+                        <p className="text-sm font-medium text-ios-gray-900">{message.file_name || 'File'}</p>
+                        <p className="text-xs text-ios-gray-600">
+                          {message.file_size ? `${(message.file_size / 1024).toFixed(1)} KB` : 'Unknown size'}
                         </p>
                       </div>
                     </div>
@@ -107,11 +108,11 @@ export default function MessageBubble({
 
               {/* Timestamp & Status */}
               <div className="flex items-center justify-end gap-2 mt-1">
-                <span className="text-xs opacity-70">
+                <span className={`text-xs ${isOwn ? 'text-white/70' : 'text-ios-gray-500'}`}>
                   {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                 </span>
-                {message.edited && <span className="text-xs opacity-70">edited</span>}
-                {isOwn && <span className="text-xs">✓✓</span>}
+                {message.edited && <span className={`text-xs ${isOwn ? 'text-white/70' : 'text-ios-gray-500'}`}>edited</span>}
+                {isOwn && <span className="text-xs text-white">✓✓</span>}
               </div>
             </>
           )}
@@ -131,7 +132,7 @@ export default function MessageBubble({
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 whileHover={{ scale: 1.1 }}
-                className="px-2 py-1 bg-arcyn-surface rounded-full text-xs border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all"
+                className="px-2 py-1 bg-white rounded-full text-xs border border-arcyn-border cursor-pointer hover:border-ios-blue/40 transition-all text-ios-gray-900"
               >
                 {emoji} {count}
               </motion.span>
@@ -155,9 +156,9 @@ export default function MessageBubble({
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setShowReactions(!showReactions)}
-                className="p-1.5 bg-arcyn-surface rounded-full hover:bg-gold-500/20 transition-colors border border-gold-500/20"
+                className="p-1.5 bg-white rounded-full hover:bg-ios-blue/10 transition-colors border border-arcyn-border shadow-ios-inner"
               >
-                <Smile className="w-4 h-4 text-gray-400" />
+                <Smile className="w-4 h-4 text-ios-gray-600" />
               </motion.button>
 
               {/* Quick Reactions Popup */}
@@ -165,7 +166,7 @@ export default function MessageBubble({
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="absolute bottom-full mb-2 left-0 bg-arcyn-surface border border-gold-500/20 rounded-xl p-2 flex gap-1 shadow-gold-glow z-10"
+                  className="absolute bottom-full mb-2 left-0 bg-white border border-arcyn-border rounded-xl p-2 flex gap-1 shadow-ios-lg z-10"
                 >
                   {quickReactions.map((emoji) => (
                     <motion.button
@@ -176,7 +177,7 @@ export default function MessageBubble({
                         onReact(emoji)
                         setShowReactions(false)
                       }}
-                      className="text-xl hover:bg-gold-500/20 rounded-lg p-1 transition-colors"
+                      className="text-xl hover:bg-ios-gray-50 rounded-lg p-1 transition-colors"
                     >
                       {emoji}
                     </motion.button>
@@ -190,9 +191,10 @@ export default function MessageBubble({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={onReply}
-              className="p-1.5 bg-arcyn-surface rounded-full hover:bg-gold-500/20 transition-colors border border-gold-500/20"
+              className="p-1.5 bg-white rounded-full hover:bg-ios-blue/10 transition-colors border border-arcyn-border shadow-ios-inner"
+              aria-label="Reply to message"
             >
-              <Reply className="w-4 h-4 text-gray-400" />
+              <Reply className="w-4 h-4 text-ios-gray-600" />
             </motion.button>
 
             {/* More Options */}
@@ -200,23 +202,24 @@ export default function MessageBubble({
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-1.5 bg-arcyn-surface rounded-full hover:bg-gold-500/20 transition-colors border border-gold-500/20"
+                className="p-1.5 bg-white rounded-full hover:bg-ios-blue/10 transition-colors border border-arcyn-border shadow-ios-inner"
+                aria-label="More options"
               >
-                <MoreVertical className="w-4 h-4 text-gray-400" />
+                <MoreVertical className="w-4 h-4 text-ios-gray-600" />
               </motion.button>
 
               {/* Dropdown Menu */}
-              <div className="absolute bottom-full mb-2 right-0 bg-arcyn-surface border border-gold-500/20 rounded-xl overflow-hidden shadow-gold-glow opacity-0 invisible group-hover/more:opacity-100 group-hover/more:visible transition-all z-10 min-w-[150px]">
+              <div className="absolute bottom-full mb-2 right-0 bg-white border border-arcyn-border rounded-xl overflow-hidden shadow-ios-lg opacity-0 invisible group-hover/more:opacity-100 group-hover/more:visible transition-all z-10 min-w-[150px]">
                 <button
                   onClick={onForward}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gold-500/20 transition-colors flex items-center gap-2"
+                  className="w-full px-4 py-2 text-left text-sm text-ios-gray-900 hover:bg-ios-gray-50 transition-colors flex items-center gap-2"
                 >
                   <Forward className="w-4 h-4" />
                   Forward
                 </button>
                 <button
                   onClick={onInfo}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gold-500/20 transition-colors flex items-center gap-2"
+                  className="w-full px-4 py-2 text-left text-sm text-ios-gray-900 hover:bg-ios-gray-50 transition-colors flex items-center gap-2"
                 >
                   <Info className="w-4 h-4" />
                   Info
@@ -224,7 +227,7 @@ export default function MessageBubble({
                 {isOwn && (
                   <button
                     onClick={onUnsend}
-                    className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-ios-red hover:bg-ios-red/10 transition-colors flex items-center gap-2"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete

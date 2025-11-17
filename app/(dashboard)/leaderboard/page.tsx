@@ -91,7 +91,9 @@ export default function LeaderboardPage() {
         setLeaderboard(data || [])
       }
     } catch (error) {
-      console.error('Error fetching leaderboard:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching leaderboard:', error)
+      }
     } finally {
       setLoading(false)
     }

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, X, File, Image as ImageIcon, Video, Music, FileText, Loader2 } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import { uploadFile, formatFileSize } from '@/lib/storage/fileUpload'
+import { isValidFileType, isValidFileSize } from '@/lib/utils/validation'
 import toast from 'react-hot-toast'
 
 interface FileUploaderProps {
@@ -27,13 +28,22 @@ export default function FileUploader({
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0]
-      if (file.size > maxSize * 1024 * 1024) {
+      
+      // Validate file type
+      if (!isValidFileType(file, accept)) {
+        toast.error(`File type not allowed. Allowed types: ${accept.join(', ')}`)
+        return
+      }
+      
+      // Validate file size
+      if (!isValidFileSize(file, maxSize)) {
         toast.error(`File size must be less than ${maxSize}MB`)
         return
       }
+      
       setSelectedFile(file)
     }
-  }, [maxSize])
+  }, [maxSize, accept])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -160,14 +170,14 @@ export default function FileUploader({
             {uploading && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Uploading...</span>
-                  <span className="text-gold-500 font-semibold">{uploadProgress}%</span>
+                  <span className="text-ios-gray-600">Uploading...</span>
+                  <span className="text-ios-blue font-semibold">{uploadProgress}%</span>
                 </div>
-                <div className="h-2 bg-arcyn-bg rounded-full overflow-hidden">
+                <div className="h-2 bg-ios-gray-100 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${uploadProgress}%` }}
-                    className="h-full bg-gradient-to-r from-gold-500 to-gold-600"
+                    className="h-full bg-gradient-to-r from-ios-blue to-ios-blue-light"
                   />
                 </div>
               </div>
@@ -178,14 +188,14 @@ export default function FileUploader({
               <button
                 onClick={() => setSelectedFile(null)}
                 disabled={uploading}
-                className="flex-1 px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl text-gray-400 hover:text-white hover:border-gold-500/40 transition-all disabled:opacity-50"
+                className="flex-1 px-4 py-3 bg-white border border-arcyn-border rounded-xl text-ios-gray-600 hover:text-ios-gray-900 hover:border-ios-blue/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-ios-inner"
               >
                 Change File
               </button>
               <button
                 onClick={handleUpload}
                 disabled={uploading}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-gold-500 to-gold-600 text-black font-bold rounded-xl hover:shadow-gold-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-3 bg-ios-blue text-white font-bold rounded-xl hover:bg-ios-blue/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-ios-md"
               >
                 {uploading ? (
                   <>

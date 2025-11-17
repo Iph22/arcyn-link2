@@ -15,12 +15,16 @@ export function useChannels() {
         const { data: { user } } = await supabase.auth.getUser()
 
         if (!user) {
-          console.warn('⚠️ No user found')
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('⚠️ No user found')
+          }
           setLoading(false)
           return
         }
 
-        console.log('📡 Fetching channels for user:', user.id)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📡 Fetching channels for user:', user.id)
+        }
 
         // Fetch channels the user is a member of
         const { data: memberChannels, error: memberError } = await supabase
@@ -32,7 +36,9 @@ export function useChannels() {
           .eq('user_id', user.id)
 
         if (memberError) {
-          console.error('❌ Error fetching channel members:', memberError)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('❌ Error fetching channel members:', memberError)
+          }
           setLoading(false)
           return
         }
@@ -40,11 +46,15 @@ export function useChannels() {
         // Extract channels from the results
         const channelList = memberChannels?.map(mc => mc.channel).filter(Boolean) || []
         
-        console.log('✅ Fetched channels:', channelList.length)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Fetched channels:', channelList.length)
+        }
         setChannels(channelList)
         setLoading(false)
       } catch (err) {
-        console.error('💥 Failed to fetch channels:', err)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('💥 Failed to fetch channels:', err)
+        }
         setLoading(false)
       }
     }
@@ -62,7 +72,9 @@ export function useChannels() {
           table: 'channels',
         },
         (payload) => {
-          console.log('📢 Channel event:', payload.eventType)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📢 Channel event:', payload.eventType)
+          }
           
           if (payload.eventType === 'INSERT') {
             setChannels((prev) => [...prev, payload.new])
@@ -104,7 +116,9 @@ export async function createChannel({
       throw new Error('User not authenticated')
     }
 
-    console.log('📝 Creating channel:', { name, branch, isPrivate })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📝 Creating channel:', { name, branch, isPrivate })
+    }
 
     // Step 1: Create the channel
     const { data: channel, error: channelError } = await supabase
@@ -120,11 +134,15 @@ export async function createChannel({
       .single()
 
     if (channelError) {
-      console.error('❌ Error creating channel:', channelError)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Error creating channel:', channelError)
+      }
       throw channelError
     }
 
-    console.log('✅ Channel created:', channel)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Channel created:', channel)
+    }
 
     // Step 2: Add creator as a member with admin role
     const { error: memberError } = await supabase
@@ -136,7 +154,9 @@ export async function createChannel({
       })
 
     if (memberError) {
-      console.error('❌ Error adding channel member:', memberError)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Error adding channel member:', memberError)
+      }
       // Don't throw - channel is created, just membership failed
     }
 
@@ -148,12 +168,16 @@ export async function createChannel({
         points_earned: 20,
       })
     } catch (activityError) {
-      console.warn('⚠️ Failed to log activity:', activityError)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('⚠️ Failed to log activity:', activityError)
+      }
     }
 
     return channel
   } catch (error) {
-    console.error('💥 Create channel failed:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('💥 Create channel failed:', error)
+    }
     throw error
   }
 }
@@ -175,11 +199,15 @@ export async function joinChannel(channelId: string) {
     })
 
   if (error) {
-    console.error('❌ Error joining channel:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('❌ Error joining channel:', error)
+    }
     throw error
   }
 
-  console.log('✅ Joined channel:', channelId)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ Joined channel:', channelId)
+  }
 }
 
 // Leave a channel
@@ -197,11 +225,15 @@ export async function leaveChannel(channelId: string) {
     .eq('user_id', user.id)
 
   if (error) {
-    console.error('❌ Error leaving channel:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('❌ Error leaving channel:', error)
+    }
     throw error
   }
 
-  console.log('✅ Left channel:', channelId)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ Left channel:', channelId)
+  }
 }
 
 // Get channel details
@@ -216,7 +248,9 @@ export async function getChannel(channelId: string) {
     .single()
 
   if (error) {
-    console.error('❌ Error fetching channel:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('❌ Error fetching channel:', error)
+    }
     throw error
   }
 

@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { getCurrentUser } from '@/lib/supabase/auth'
-import { Home, MessageSquare, Phone, Bot, Trophy, User, Settings as SettingsIcon, LogOut, FileText } from 'lucide-react'
+import { Home, MessageSquare, Phone, Bot, Trophy, User, Settings as SettingsIcon, LogOut, FileText, Menu, X } from 'lucide-react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase/client'
 import type { Profile } from '@/lib/supabase/client'
 import NotificationBell from '@/components/notifications/NotificationBell'
@@ -13,8 +13,10 @@ import GlobalSearch from '@/components/search/GlobalSearch'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const pathname = usePathname()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     checkAuth()
@@ -64,19 +66,44 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-arcyn-bg flex">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-arcyn-surface border border-arcyn-border rounded-lg text-ios-gray-600 hover:text-ios-gray-900 transition-colors"
+        aria-label="Toggle sidebar"
+        aria-expanded={sidebarOpen}
+      >
+        {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
       <motion.aside
         initial={{ x: -300 }}
-        animate={{ x: 0 }}
-        className="w-72 bg-arcyn-surface border-r border-arcyn-border flex flex-col shadow-ios"
+        animate={{ 
+          x: sidebarOpen || (typeof window !== 'undefined' && window.innerWidth >= 1024) ? 0 : -300 
+        }}
+        className="fixed lg:static w-72 h-screen bg-arcyn-surface border-r border-arcyn-border flex flex-col shadow-ios z-40"
       >
         {/* Logo */}
         <div className="p-6 border-b border-arcyn-border">
           <div className="flex items-center gap-3">
             <div className="w-32 h-32 mx-auto mb-8">
               <img 
-              src="./Logo.png" 
-              alt="Logo"
+              src="/Logo.png" 
+              alt="Arcyn Link Logo"
               className="w-full h-full object-contain"
               />
             </div>
@@ -89,18 +116,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href}>
-              <motion.div
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-ios-gray-600 hover:text-ios-gray-900 hover:bg-ios-gray-50 transition-all cursor-pointer"
-              >
-                <item.icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
-              </motion.div>
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <Link key={item.href} href={item.href}>
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-ios-blue/10 text-ios-blue border border-ios-blue/20'
+                      : 'text-ios-gray-600 hover:text-ios-gray-900 hover:bg-ios-gray-50'
+                  }`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span className="font-medium">{item.label}</span>
+                </motion.div>
+              </Link>
+            )
+          })}
         </nav>
 
         {/* User Profile */}
@@ -140,9 +175,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </motion.aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
         {/* Top Bar */}
-        <div className="h-16 glass border-b border-arcyn-border flex items-center justify-between px-6">
+        <div className="h-16 glass border-b border-arcyn-border flex items-center justify-between px-4 lg:px-6">
           <GlobalSearch />
           <div className="flex items-center gap-4">
             <NotificationBell />

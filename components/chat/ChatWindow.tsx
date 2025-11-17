@@ -10,6 +10,8 @@ import MessageInfo from './MessageInfo'
 import ForwardMessageModal from './ForwardMessageModal'
 import { getCurrentUser } from '@/lib/supabase/auth'
 import { uploadFile } from '@/lib/storage/fileUpload'
+import { sanitizeUserInput } from '@/lib/utils/sanitize'
+import { isValidFileType, isValidFileSize } from '@/lib/utils/validation'
 import toast from 'react-hot-toast'
 
 interface ChatWindowProps {
@@ -20,6 +22,20 @@ interface ChatWindowProps {
 
 export default function ChatWindow({ channelId, conversationId, channelName }: ChatWindowProps) {
   const { messages, loading } = useChatMessages(channelId, conversationId)
+  
+  if (!channelId && !conversationId) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-ios-blue to-ios-blue-light rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-ios-lg">
+            <span className="text-3xl">💬</span>
+          </div>
+          <h3 className="text-xl font-bold text-ios-gray-900 mb-2">Select a Channel</h3>
+          <p className="text-ios-gray-600">Choose a channel from the sidebar to start chatting</p>
+        </div>
+      </div>
+    )
+  }
   const [inputValue, setInputValue] = useState('')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [replyingTo, setReplyingTo] = useState<any>(null)
@@ -50,19 +66,49 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
   const handleSend = async () => {
     if (!inputValue.trim()) return
 
+    const sanitizedContent = sanitizeUserInput(inputValue, 5000)
+    if (!sanitizedContent) {
+      toast.error('Message cannot be empty')
+      return
+    }
+
+    // Optimistic update: create temporary message
+    const tempId = `temp-${Date.now()}`
+    const optimisticMessage = {
+      id: tempId,
+      content: sanitizedContent,
+      message_type: 'text' as const,
+      sender_id: currentUserId || '',
+      channel_id: channelId || null,
+      conversation_id: conversationId || null,
+      reply_to_id: replyingTo?.id || null,
+      is_deleted: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      sender: currentUserId ? { id: currentUserId, full_name: 'You', username: 'you' } : undefined,
+      reactions: [],
+    }
+
+    // Clear input immediately for better UX
+    const messageToSend = inputValue
+    setInputValue('')
+    const replyTo = replyingTo
+    setReplyingTo(null)
+
     try {
       await sendMessage({
-        content: inputValue,
+        content: sanitizedContent,
         channelId,
         conversationId,
-        replyToId: replyingTo?.id,
+        replyToId: replyTo?.id,
       })
-
-      setInputValue('')
-      setReplyingTo(null)
-      toast.success('Message sent!')
-    } catch (error) {
-      toast.error('Failed to send message')
+      // Real-time subscription will add the actual message, so we don't need to manually add it
+      // The optimistic message will be replaced by the real one
+    } catch (error: any) {
+      // Revert optimistic update on error
+      setInputValue(messageToSend)
+      if (replyTo) setReplyingTo(replyTo)
+      toast.error(error.message || 'Failed to send message')
     }
   }
 
@@ -149,10 +195,10 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
   return (
     <div className="flex flex-col h-full bg-arcyn-bg">
       {/* Header */}
-      <div className="h-16 border-b border-gold-500/20 flex items-center justify-between px-6 bg-arcyn-surface/50 backdrop-blur">
+      <div className="h-16 border-b border-arcyn-border flex items-center justify-between px-6 bg-white shadow-ios-inner">
         <div>
-          <h2 className="text-lg font-semibold text-white">{channelName || 'Chat'}</h2>
-          <p className="text-xs text-gray-400">{messages.length} messages</p>
+          <h2 className="text-lg font-semibold text-ios-gray-900">{channelName || 'Chat'}</h2>
+          <p className="text-xs text-ios-gray-600">{messages.length} messages</p>
         </div>
       </div>
 
@@ -161,11 +207,11 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-gold-400 to-gold-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-gold-glow">
+              <div className="w-16 h-16 bg-gradient-to-br from-ios-blue to-ios-blue-light rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-ios-lg">
                 <span className="text-3xl">💬</span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">No messages yet</h3>
-              <p className="text-gray-400">Start the conversation!</p>
+              <h3 className="text-xl font-bold text-ios-gray-900 mb-2">No messages yet</h3>
+              <p className="text-ios-gray-600">Start the conversation!</p>
             </div>
           </div>
         ) : (
@@ -194,23 +240,23 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="px-4 py-2 bg-arcyn-surface border-t border-gold-500/20"
+            className="px-4 py-2 bg-white border-t border-arcyn-border shadow-ios-inner"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-1 h-10 bg-gold-500 rounded-full" />
+                <div className="w-1 h-10 bg-ios-blue rounded-full" />
                 <div>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-ios-gray-600">
                     Replying to {replyingTo.sender?.full_name}
                   </p>
-                  <p className="text-sm text-gray-300 truncate max-w-md">
+                  <p className="text-sm text-ios-gray-700 truncate max-w-md">
                     {replyingTo.content}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setReplyingTo(null)}
-                className="p-1 text-gray-400 hover:text-white transition-colors"
+                className="p-1 text-ios-gray-500 hover:text-ios-gray-900 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -220,7 +266,7 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
       </AnimatePresence>
 
       {/* Input Area */}
-      <div className="p-4 bg-arcyn-surface border-t border-gold-500/20">
+      <div className="p-4 bg-white border-t border-arcyn-border shadow-ios-inner">
         <div className="flex items-end gap-2">
           {/* File Upload */}
           <input
@@ -232,7 +278,8 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="p-2 text-gray-400 hover:text-gold-500 transition-colors disabled:opacity-50"
+            className="p-2 text-ios-gray-500 hover:text-ios-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Attach file"
           >
             <Paperclip className="w-6 h-6" />
           </button>
@@ -241,7 +288,9 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
           <div className="relative">
             <button
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="p-2 text-gray-400 hover:text-gold-500 transition-colors"
+              className="p-2 text-ios-gray-500 hover:text-ios-blue transition-colors"
+              aria-label="Add emoji"
+              aria-expanded={showEmojiPicker}
             >
               <Smile className="w-6 h-6" />
             </button>
@@ -261,8 +310,10 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
-              className="w-full px-4 py-3 bg-black/50 border border-gold-500/20 rounded-2xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-gold-500 placeholder-gray-500 resize-none max-h-32 transition-all"
+              className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-2xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 resize-none max-h-32 transition-all shadow-ios-inner"
               rows={1}
+              aria-label="Message input"
+              maxLength={5000}
             />
           </div>
 
@@ -271,10 +322,11 @@ export default function ChatWindow({ channelId, conversationId, channelName }: C
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleSend}
-            disabled={!inputValue.trim()}
-            className="p-3 bg-gradient-to-r from-gold-500 to-gold-600 rounded-full hover:shadow-gold-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!inputValue.trim() || uploading}
+            className="p-3 bg-ios-blue rounded-full hover:bg-ios-blue/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-ios-md"
+            aria-label="Send message"
           >
-            <Send className="w-5 h-5 text-black" />
+            <Send className="w-5 h-5 text-white" />
           </motion.button>
         </div>
       </div>

@@ -73,7 +73,9 @@ export default function DashboardPage() {
         aiQueries: aiCount || 0,
       })
     } catch (error) {
-      console.error('Error loading stats:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading stats:', error)
+      }
     }
   }
 

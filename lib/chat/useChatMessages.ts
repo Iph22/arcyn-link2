@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import type { MessageWithSender } from '@/lib/supabase/client'
+import { retry } from '@/lib/utils/retry'
 
 export function useChatMessages(channelId?: string, conversationId?: string) {
   const [messages, setMessages] = useState<MessageWithSender[]>([])
@@ -12,31 +13,49 @@ export function useChatMessages(channelId?: string, conversationId?: string) {
 
     async function fetchMessages() {
       try {
-        const query = supabase
-          .from('messages')
-          .select(`
-            *,
-            sender:profiles!sender_id(*),
-            reactions:message_reactions(*)
-          `)
-          .order('created_at', { ascending: true })
+        const result = await retry(async () => {
+          const query = supabase
+            .from('messages')
+            .select(`
+              *,
+              sender:profiles!sender_id(*),
+              reactions:message_reactions(*)
+            `)
+            .order('created_at', { ascending: true })
 
-        if (channelId) {
-          query.eq('channel_id', channelId)
-        } else if (conversationId) {
-          query.eq('conversation_id', conversationId)
-        }
+          if (channelId) {
+            query.eq('channel_id', channelId)
+          } else if (conversationId) {
+            query.eq('conversation_id', conversationId)
+          }
 
-        const { data, error } = await query
+          const { data, error } = await query
 
-        if (error) {
-          console.error('❌ Error fetching messages:', error)
-        } else if (data) {
-          console.log('✅ Fetched messages:', data.length)
-          setMessages(data)
+          if (error) {
+            throw error
+          }
+
+          return data
+        }, {
+          maxAttempts: 3,
+          delay: 1000,
+          onRetry: (attempt, error) => {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`Retrying fetchMessages (attempt ${attempt}):`, error)
+            }
+          }
+        })
+
+        if (result) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ Fetched messages:', result.length)
+          }
+          setMessages(result)
         }
       } catch (err) {
-        console.error('💥 Failed to fetch messages:', err)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('💥 Failed to fetch messages after retries:', err)
+        }
       } finally {
         setLoading(false)
       }
@@ -58,7 +77,9 @@ export function useChatMessages(channelId?: string, conversationId?: string) {
             : `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-          console.log('📨 Real-time message event:', payload.eventType, payload)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📨 Real-time message event:', payload.eventType, payload)
+          }
           
           if (payload.eventType === 'INSERT') {
             // Fetch the full message with sender details
@@ -73,7 +94,9 @@ export function useChatMessages(channelId?: string, conversationId?: string) {
               .single()
 
             if (fullMessage) {
-              console.log('✅ Adding new message to chat:', fullMessage)
+              if (process.env.NODE_ENV === 'development') {
+                console.log('✅ Adding new message to chat:', fullMessage)
+              }
               setMessages((prev) => [...prev, fullMessage])
             }
           } else if (payload.eventType === 'UPDATE') {
@@ -99,13 +122,15 @@ export function useChatMessages(channelId?: string, conversationId?: string) {
         }
       )
       .subscribe((status) => {
-        console.log('🔌 Realtime subscription status:', status)
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Successfully subscribed to real-time messages')
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Real-time channel error')
-        } else if (status === 'TIMED_OUT') {
-          console.error('⏱️ Real-time subscription timed out')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔌 Realtime subscription status:', status)
+          if (status === 'SUBSCRIBED') {
+            console.log('✅ Successfully subscribed to real-time messages')
+          } else if (status === 'CHANNEL_ERROR') {
+            console.error('❌ Real-time channel error')
+          } else if (status === 'TIMED_OUT') {
+            console.error('⏱️ Real-time subscription timed out')
+          }
         }
       })
 
@@ -139,28 +164,53 @@ export async function sendMessage({
       throw new Error('User not authenticated')
     }
 
-    console.log('📤 Sending message:', { content, channelId, conversationId })
-    
-    const { data, error } = await supabase
-      .from('messages')
-      .insert({
-        content,
-        message_type: messageType,
-        sender_id: user.id,
-        channel_id: channelId || null,
-        conversation_id: conversationId || null,
-        file_url: fileUrl || null,
-        reply_to_id: replyToId || null,
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('❌ Error sending message:', error)
-      throw error
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📤 Sending message:', { content, channelId, conversationId })
     }
     
-    console.log('✅ Message sent:', data)
+    const data = await retry(async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({
+          content,
+          message_type: messageType,
+          sender_id: user.id,
+          channel_id: channelId || null,
+          conversation_id: conversationId || null,
+          file_url: fileUrl || null,
+          reply_to_id: replyToId || null,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        // Log detailed error information
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Message insert error details:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code,
+            error
+          })
+        }
+        throw error
+      }
+
+      return data
+    }, {
+      maxAttempts: 3,
+      delay: 500,
+      onRetry: (attempt, error) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`Retrying sendMessage (attempt ${attempt}):`, error)
+        }
+      }
+    })
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Message sent:', data)
+    }
 
     // Log activity (don't fail if this errors)
     try {
@@ -170,12 +220,16 @@ export async function sendMessage({
         points_earned: 1,
       })
     } catch (activityError) {
-      console.warn('⚠️ Failed to log activity:', activityError)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('⚠️ Failed to log activity:', activityError)
+      }
     }
     
     return data
   } catch (error) {
-    console.error('💥 Send message failed:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('💥 Send message failed after retries:', error)
+    }
     throw error
   }
 }

@@ -34,7 +34,9 @@ export default function NotificationBell() {
         setUnreadCount(data.filter(n => !n.read).length)
       }
     } catch (error) {
-      console.error('Error loading notifications:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading notifications:', error)
+      }
     }
   }
 
@@ -77,7 +79,9 @@ export default function NotificationBell() {
       )
       setUnreadCount(prev => Math.max(0, prev - 1))
     } catch (error) {
-      console.error('Error marking as read:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error marking as read:', error)
+      }
     }
   }
 
@@ -95,7 +99,9 @@ export default function NotificationBell() {
       setNotifications(prev => prev.map(n => ({ ...n, read: true })))
       setUnreadCount(0)
     } catch (error) {
-      console.error('Error marking all as read:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error marking all as read:', error)
+      }
     }
   }
 

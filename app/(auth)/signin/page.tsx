@@ -1,11 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { signIn } from '@/lib/supabase/auth'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import { isValidEmail } from '@/lib/utils/validation'
+import { sanitizeUserInput } from '@/lib/utils/sanitize'
+import { supabase } from '@/lib/supabase/client'
 
 export default function SignInPage() {
   const router = useRouter()
@@ -14,13 +17,48 @@ export default function SignInPage() {
     password: '',
   })
   const [loading, setLoading] = useState(false)
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          // User is already logged in, redirect to dashboard
+          router.push('/dashboard')
+          return
+        }
+      } catch (error) {
+        // Ignore errors, just show signin form
+      } finally {
+        setChecking(false)
+      }
+    }
+
+    checkSession()
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!isValidEmail(formData.email)) {
+      toast.error('Please enter a valid email address')
+      return
+    }
+
+    if (!formData.password) {
+      toast.error('Please enter your password')
+      return
+    }
+
     setLoading(true)
 
     try {
-      await signIn(formData)
+      await signIn({
+        email: sanitizeUserInput(formData.email.toLowerCase().trim()),
+        password: formData.password,
+      })
       toast.success('Welcome back!')
       router.push('/dashboard')
     } catch (error: any) {
@@ -28,6 +66,18 @@ export default function SignInPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-arcyn-bg flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 bg-ios-blue rounded-full animate-bounce" />
+          <div className="w-3 h-3 bg-ios-blue rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+          <div className="w-3 h-3 bg-ios-blue rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -71,8 +121,8 @@ export default function SignInPage() {
         >
           <div className="w-32 h-32 mx-auto mb-8">
             <img 
-            src="./Logo.png" 
-            alt="Logo"
+            src="/Logo.png" 
+            alt="Arcyn Link Logo"
             className="w-full h-full object-contain"
             />
           </div>

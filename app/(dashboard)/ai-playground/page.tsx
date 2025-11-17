@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bot, Code, FileText, MessageSquare, Send, Sparkles, Loader2 } from 'lucide-react'
 import { chatWithClaude, getCodeHelp, analyzeDocument, summarizeChat } from '@/lib/ai/claude'
+import { sanitizeUserInput } from '@/lib/utils/sanitize'
 import toast from 'react-hot-toast'
 
 type Mode = 'chat' | 'code' | 'document' | 'summary'
@@ -22,10 +23,17 @@ export default function AIPlaygroundPage() {
   ]
 
   const handleSubmit = async () => {
-    if (!input.trim()) return
+    if (!input.trim() || loading) return
 
-    const userMessage = { role: 'user', content: input }
-    setMessages([...messages, userMessage])
+    const sanitizedInput = sanitizeUserInput(input, 10000)
+    if (!sanitizedInput) {
+      toast.error('Input cannot be empty')
+      return
+    }
+
+    const userMessage = { role: 'user', content: sanitizedInput }
+    const updatedMessages = [...messages, userMessage]
+    setMessages(updatedMessages)
     setInput('')
     setLoading(true)
 
@@ -34,16 +42,16 @@ export default function AIPlaygroundPage() {
 
       switch (mode) {
         case 'chat':
-          response = await chatWithClaude([...messages, userMessage])
+          response = await chatWithClaude(updatedMessages)
           break
         case 'code':
-          response = await getCodeHelp(input, 'Please help me with this code')
+          response = await getCodeHelp(sanitizedInput, 'Please help me with this code')
           break
         case 'document':
-          response = await analyzeDocument(input)
+          response = await analyzeDocument(sanitizedInput)
           break
         case 'summary':
-          const textToSummarize = messages.map(m => m.content).concat(input)
+          const textToSummarize = messages.map(m => m.content).concat(sanitizedInput)
           response = await summarizeChat(textToSummarize)
           break
       }
@@ -53,11 +61,11 @@ export default function AIPlaygroundPage() {
         content: typeof response === 'string' ? response : response.content[0]?.text || 'No response'
       }
 
-      setMessages([...messages, userMessage, assistantMessage])
-      toast.success('Response received!')
+      setMessages([...updatedMessages, assistantMessage])
+      // Don't show toast for every response
     } catch (error: any) {
       toast.error(error.message || 'Failed to get AI response')
-      setMessages([...messages, userMessage])
+      // Keep user message even on error
     } finally {
       setLoading(false)
     }
@@ -244,6 +252,7 @@ export default function AIPlaygroundPage() {
                 onClick={handleSubmit}
                 disabled={loading || !input.trim()}
                 className="p-4 bg-ios-blue rounded-xl hover:bg-ios-blue/90 shadow-ios-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Send message"
               >
                 {loading ? (
                   <Loader2 className="w-6 h-6 text-white animate-spin" />

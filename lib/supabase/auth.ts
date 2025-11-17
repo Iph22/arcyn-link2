@@ -17,12 +17,14 @@ export async function signUp({
   branch: 'arcyn_x' | 'modulex' | 'nexalab'
 }) {
   try {
-    console.log('🚀 Starting signup...')
-    console.log('📧 Email:', email)
-    console.log('👤 Username:', username)
-    console.log('🏢 Branch:', branch)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚀 Starting signup...')
+      console.log('📧 Email:', email)
+      console.log('👤 Username:', username)
+      console.log('🏢 Branch:', branch)
+    }
 
-    // Check if username exists (use service role to bypass RLS temporarily)
+    // Check if username exists
     const { data: existingUser } = await supabase
       .from('profiles')
       .select('username')
@@ -33,12 +35,20 @@ export async function signUp({
       throw new Error('Username already taken')
     }
 
-    // Sign up WITHOUT triggers (profile created in callback)
+    // Get the base URL from environment or window
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔗 Using redirect URL:', `${baseUrl}/auth/callback`)
+    }
+
+    // Sign up with email confirmation
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?username=${username}&fullName=${encodeURIComponent(fullName)}&branch=${branch}`,
+        emailRedirectTo: `${baseUrl}/auth/callback?username=${encodeURIComponent(username)}&fullName=${encodeURIComponent(fullName)}&branch=${encodeURIComponent(branch)}`,
         data: {
           full_name: fullName,
           username: username,
@@ -48,22 +58,48 @@ export async function signUp({
     })
 
     if (authError) {
-      console.error('❌ Auth error:', authError)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Auth error:', authError)
+        console.error('Error details:', {
+          message: authError.message,
+          status: authError.status,
+        })
+      }
       throw authError
     }
 
-    console.log('✅ User created! Check email for confirmation.')
+    // Check if email confirmation is required
+    if (authData.user && !authData.session) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ User created! Email confirmation required.')
+        console.log('📧 Confirmation email should be sent to:', email)
+      }
+      // Email confirmation is required - user will receive email
+    } else if (authData.session) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ User created and logged in! (Email confirmation disabled)')
+      }
+    } else {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('⚠️ Unexpected signup response:', authData)
+      }
+    }
+
     return authData
 
   } catch (error: any) {
-    console.error('💥 Signup failed:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('💥 Signup failed:', error)
+    }
     throw error
   }
 }
 
 export async function signIn({ email, password }: { email: string; password: string }) {
   try {
-    console.log('🔐 Signing in:', email)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔐 Signing in:', email)
+    }
     
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -71,7 +107,9 @@ export async function signIn({ email, password }: { email: string; password: str
     })
 
     if (error) {
-      console.error('❌ Signin error:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Signin error:', error)
+      }
       throw error
     }
 
@@ -79,8 +117,10 @@ export async function signIn({ email, password }: { email: string; password: str
       throw new Error('No user data returned')
     }
 
-    console.log('✅ Signin successful:', data.user.email)
-    console.log('👤 User ID:', data.user.id)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Signin successful:', data.user.email)
+      console.log('👤 User ID:', data.user.id)
+    }
 
     // CRITICAL: Wait a moment for RLS context to be set
     await new Promise(resolve => setTimeout(resolve, 100))
@@ -93,19 +133,25 @@ export async function signIn({ email, password }: { email: string; password: str
       .maybeSingle()
 
     if (profileError) {
-      console.error('❌ Profile fetch error:', profileError)
-      console.error('Error details:', {
-        code: profileError.code,
-        message: profileError.message,
-        details: profileError.details,
-        hint: profileError.hint
-      })
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Profile fetch error:', profileError)
+        console.error('Error details:', {
+          code: profileError.code,
+          message: profileError.message,
+          details: profileError.details,
+          hint: profileError.hint
+        })
+      }
     }
 
-    console.log('Profile fetch result:', profile ? '✅ Found' : '❌ Not found')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Profile fetch result:', profile ? '✅ Found' : '❌ Not found')
+    }
 
     if (!profile) {
-      console.log('⚠️ Profile not found - attempting to create...')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⚠️ Profile not found - attempting to create...')
+      }
       
       // Prepare profile data with ONLY essential fields
       // Start with minimum required fields
@@ -128,7 +174,9 @@ export async function signIn({ email, password }: { email: string; password: str
       // Merge optional fields
       Object.assign(profileData, optionalFields)
 
-      console.log('📝 Attempting to insert profile:', profileData)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📝 Attempting to insert profile:', profileData)
+      }
 
       const { data: newProfile, error: createError } = await supabase
         .from('profiles')
@@ -137,13 +185,15 @@ export async function signIn({ email, password }: { email: string; password: str
         .single()
 
       if (createError) {
-        console.error('❌ Profile creation error:', createError)
-        console.error('Error details:', {
-          code: createError.code,
-          message: createError.message,
-          details: createError.details,
-          hint: createError.hint
-        })
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Profile creation error:', createError)
+          console.error('Error details:', {
+            code: createError.code,
+            message: createError.message,
+            details: createError.details,
+            hint: createError.hint
+          })
+        }
         
         // Check if it's an RLS error
         if (createError.code === '42501' || createError.message?.includes('policy')) {
@@ -152,7 +202,9 @@ export async function signIn({ email, password }: { email: string; password: str
         
         // Check if profile already exists (different error)
         if (createError.code === '23505') {
-          console.log('⚠️ Profile already exists, trying to fetch again...')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⚠️ Profile already exists, trying to fetch again...')
+          }
           const { data: retryProfile } = await supabase
             .from('profiles')
             .select('*')
@@ -160,7 +212,9 @@ export async function signIn({ email, password }: { email: string; password: str
             .single()
           
           if (retryProfile) {
-            console.log('✅ Found profile on retry')
+            if (process.env.NODE_ENV === 'development') {
+              console.log('✅ Found profile on retry')
+            }
             return data
           }
         }
@@ -168,9 +222,13 @@ export async function signIn({ email, password }: { email: string; password: str
         throw new Error(`Profile creation failed: ${createError.message}`)
       }
 
-      console.log('✅ Profile created successfully:', newProfile)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Profile created successfully:', newProfile)
+      }
     } else {
-      console.log('✅ Profile found, updating login stats...')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Profile found, updating login stats...')
+      }
       
       // Update login stats
       const lastLogin = profile.last_login ? new Date(profile.last_login) : null
@@ -195,7 +253,9 @@ export async function signIn({ email, password }: { email: string; password: str
         .eq('id', data.user.id)
 
       if (updateError) {
-        console.warn('⚠️ Failed to update login stats:', updateError)
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('⚠️ Failed to update login stats:', updateError)
+        }
         // Don't throw - this isn't critical
       }
 
@@ -207,15 +267,21 @@ export async function signIn({ email, password }: { email: string; password: str
           points_earned: 10,
         })
       } catch (e) {
-        console.warn('⚠️ Activity log failed:', e)
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('⚠️ Activity log failed:', e)
+        }
       }
     }
 
-    console.log('✅ Sign in complete!')
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Sign in complete!')
+    }
     return data
 
   } catch (error: any) {
-    console.error('💥 Signin failed:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('💥 Signin failed:', error)
+    }
     throw error
   }
 }
@@ -234,7 +300,9 @@ export async function signOut() {
     const { error } = await supabase.auth.signOut()
     if (error) throw error
   } catch (error) {
-    console.error('Signout error:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Signout error:', error)
+    }
     throw error
   }
 }
@@ -252,13 +320,17 @@ export async function getCurrentUser() {
       .maybeSingle()
 
     if (error) {
-      console.error('Error fetching current user profile:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching current user profile:', error)
+      }
       return null
     }
 
     return profile
   } catch (error) {
-    console.error('getCurrentUser error:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('getCurrentUser error:', error)
+    }
     return null
   }
 }

@@ -48,7 +48,9 @@ export async function POST(request: NextRequest) {
       expiresAt: privilegeExpiredTs,
     })
   } catch (error: any) {
-    console.error('Error generating Agora token:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error generating Agora token:', error)
+    }
     return NextResponse.json(
       { error: error.message || 'Failed to generate token' },
       { status: 500 }

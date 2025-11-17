@@ -6,6 +6,8 @@ import { motion } from 'framer-motion'
 import { signUp } from '@/lib/supabase/auth'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import { isValidEmail, isValidPassword, isValidUsername } from '@/lib/utils/validation'
+import { sanitizeUserInput } from '@/lib/utils/sanitize'
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -21,8 +23,31 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Validate inputs
+    if (!isValidEmail(formData.email)) {
+      toast.error('Please enter a valid email address')
+      return
+    }
+
+    const passwordValidation = isValidPassword(formData.password)
+    if (!passwordValidation.valid) {
+      toast.error(passwordValidation.errors[0])
+      return
+    }
+
+    const usernameValidation = isValidUsername(formData.username)
+    if (!usernameValidation.valid) {
+      toast.error(usernameValidation.errors[0])
+      return
+    }
+
     if (!formData.branch) {
       toast.error('Please select a branch')
+      return
+    }
+
+    if (!formData.fullName.trim()) {
+      toast.error('Please enter your full name')
       return
     }
 
@@ -30,10 +55,10 @@ export default function SignUpPage() {
 
     try {
       await signUp({
-        email: formData.email,
+        email: sanitizeUserInput(formData.email.toLowerCase().trim()),
         password: formData.password,
-        fullName: formData.fullName,
-        username: formData.username,
+        fullName: sanitizeUserInput(formData.fullName.trim(), 100),
+        username: sanitizeUserInput(formData.username.toLowerCase().trim(), 30),
         branch: formData.branch as 'arcyn_x' | 'modulex' | 'nexalab',
       })
       
@@ -88,8 +113,8 @@ export default function SignUpPage() {
         >
           <div className="w-32 h-32 mx-auto mb-8">
             <img 
-              src="./Logo.png" 
-              alt="Logo"
+              src="/Logo.png" 
+              alt="Arcyn Link Logo"
               className="w-full h-full object-contain"
             />
           </div>

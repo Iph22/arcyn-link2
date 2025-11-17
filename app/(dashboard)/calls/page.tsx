@@ -1,14 +1,54 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Phone, Video, Clock } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
+import { getCurrentUser } from '@/lib/supabase/auth'
 import toast from 'react-hot-toast'
+import VideoCallWindow from '@/components/calls/VideoCallWindow'
 
 export default function CallsPage() {
   const [loading, setLoading] = useState(false)
   const [calls, setCalls] = useState<any[]>([])
+  const [activeCall, setActiveCall] = useState<{
+    callId: string
+    channelName: string
+    token: string
+  } | null>(null)
+
+  useEffect(() => {
+    loadCallHistory()
+  }, [])
+
+  useEffect(() => {
+    // Refresh call history when returning from call
+    if (!activeCall) {
+      loadCallHistory()
+    }
+  }, [activeCall])
+
+  async function loadCallHistory() {
+    try {
+      const user = await getCurrentUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('calls')
+        .select('*')
+        .eq('initiator_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (!error && data) {
+        setCalls(data)
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading call history:', error)
+      }
+    }
+  }
 
   const startCall = async (type: 'audio' | 'video') => {
     setLoading(true)
@@ -19,10 +59,7 @@ export default function CallsPage() {
         throw new Error('Please sign in to start a call')
       }
 
-      // For now, create a call in a general conversation
-      // You can modify this to select a specific channel/conversation
-      
-      // Option 1: Create a test conversation first
+      // Create a conversation for the call
       const { data: conversation, error: convError } = await supabase
         .from('conversations')
         .insert({
@@ -33,7 +70,9 @@ export default function CallsPage() {
         .single()
 
       if (convError) {
-        console.error('Conversation error:', convError)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Conversation error:', convError)
+        }
         throw new Error('Failed to create conversation')
       }
 
@@ -45,22 +84,26 @@ export default function CallsPage() {
           user_id: user.id,
         })
 
+      const channelName = `call-${Date.now()}`
+      
       // Create the call
       const { data: call, error: callError } = await supabase
         .from('calls')
         .insert({
           call_type: type,
-          status: 'ringing',
+          status: 'active',
           initiator_id: user.id,
-          conversation_id: conversation.id, // This fixes the constraint error!
+          conversation_id: conversation.id,
           started_at: new Date().toISOString(),
-          agora_channel_name: `call-${Date.now()}`,
+          agora_channel_name: channelName,
         })
         .select()
         .single()
 
       if (callError) {
-        console.error('Call error:', callError)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Call error:', callError)
+        }
         throw callError
       }
 
@@ -73,17 +116,63 @@ export default function CallsPage() {
           joined_at: new Date().toISOString(),
         })
 
+      // Get Agora token
+      const tokenResponse = await fetch('/api/agora-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channelName, uid: user.id }),
+      })
+
+      if (!tokenResponse.ok) {
+        throw new Error('Failed to get call token')
+      }
+
+      const { token } = await tokenResponse.json()
+
+      // Start the call
+      setActiveCall({
+        callId: call.id,
+        channelName,
+        token,
+      })
+
       toast.success(`${type === 'audio' ? 'Audio' : 'Video'} call started!`)
       
-      // TODO: Navigate to call screen or open call window
-      console.log('Call created:', call)
-      
     } catch (error: any) {
-      console.error('Start call error:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Start call error:', error)
+      }
       toast.error(error.message || 'Failed to start call')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleLeaveCall = async () => {
+    if (activeCall) {
+      // Update call status
+      await supabase
+        .from('calls')
+        .update({ 
+          status: 'ended',
+          ended_at: new Date().toISOString(),
+        })
+        .eq('id', activeCall.callId)
+    }
+    setActiveCall(null)
+    loadCallHistory()
+  }
+
+  // Show video call window if active
+  if (activeCall) {
+    return (
+      <VideoCallWindow
+        callId={activeCall.callId}
+        channelName={activeCall.channelName}
+        token={activeCall.token}
+        onLeave={handleLeaveCall}
+      />
+    )
   }
 
   return (
@@ -135,6 +224,7 @@ export default function CallsPage() {
             onClick={() => startCall('video')}
             disabled={loading}
             className="relative overflow-hidden bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl p-8 text-left hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Start video call"
           >
             <div className="relative z-10">
               <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4">

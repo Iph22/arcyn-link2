@@ -36,7 +36,9 @@ export async function uploadFile(file: File, channelId?: string): Promise<{
       type: file.type,
     }
   } catch (error) {
-    console.error('Upload error:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Upload error:', error)
+    }
     throw error
   }
 }
@@ -49,7 +51,9 @@ export async function deleteFile(filePath: string) {
 
     if (error) throw error
   } catch (error) {
-    console.error('Delete error:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Delete error:', error)
+    }
     throw error
   }
 }

@@ -65,9 +65,16 @@ export default function VideoCallWindow({ callId, channelName, token, onLeave }:
         setRemoteUsers((prev) => prev.filter(u => u.uid !== user.uid))
       })
 
+      // Get app ID from environment or use token response
+      const appId = process.env.NEXT_PUBLIC_AGORA_APP_ID || ''
+      
+      if (!appId) {
+        throw new Error('Agora App ID not configured')
+      }
+
       // Join channel
       await client.join(
-        process.env.NEXT_PUBLIC_AGORA_APP_ID!,
+        appId,
         channelName,
         token,
         Math.floor(Math.random() * 100000)
@@ -83,7 +90,9 @@ export default function VideoCallWindow({ callId, channelName, token, onLeave }:
       
       setJoined(true)
     } catch (error) {
-      console.error('Failed to join call:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to join call:', error)
+      }
     }
   }
 
@@ -183,6 +192,7 @@ export default function VideoCallWindow({ callId, channelName, token, onLeave }:
                 ? 'bg-gray-700 hover:bg-gray-600'
                 : 'bg-red-500 hover:bg-red-600'
             } transition-colors`}
+            aria-label={videoEnabled ? 'Turn off camera' : 'Turn on camera'}
           >
             {videoEnabled ? (
               <Video className="w-6 h-6 text-white" />

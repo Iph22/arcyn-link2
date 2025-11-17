@@ -4,17 +4,17 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageSquare, Plus, Search, Hash, X } from 'lucide-react'
 import { useChannels, createChannel } from '@/lib/hooks/useChannels'
-import { useChatMessages, sendMessage } from '@/lib/chat/useChatMessages'
 import toast from 'react-hot-toast'
+import ChatWindow from '@/components/chat/ChatWindow'
+import { isValidChannelName } from '@/lib/utils/validation'
+import { sanitizeUserInput } from '@/lib/utils/sanitize'
 
 export default function ChatPage() {
   const { channels, loading: channelsLoading } = useChannels()
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
-  const { messages, loading: messagesLoading } = useChatMessages(selectedChannelId || undefined)
+  const [searchQuery, setSearchQuery] = useState('')
   
   const [showCreateChannel, setShowCreateChannel] = useState(false)
-  const [messageInput, setMessageInput] = useState('')
-  const [sending, setSending] = useState(false)
 
   // Create channel form state
   const [newChannelData, setNewChannelData] = useState({
@@ -25,19 +25,25 @@ export default function ChatPage() {
   })
 
   const selectedChannel = channels.find(ch => ch.id === selectedChannelId)
+  
+  const filteredChannels = channels.filter(channel =>
+    channel.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    channel.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   const handleCreateChannel = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!newChannelData.name.trim()) {
-      toast.error('Channel name is required')
+    const nameValidation = isValidChannelName(newChannelData.name.trim())
+    if (!nameValidation.valid) {
+      toast.error(nameValidation.errors[0])
       return
     }
 
     try {
       const channel = await createChannel({
-        name: newChannelData.name,
-        description: newChannelData.description,
+        name: sanitizeUserInput(newChannelData.name.trim(), 50),
+        description: sanitizeUserInput(newChannelData.description.trim(), 500),
         branch: newChannelData.branch || undefined,
         isPrivate: newChannelData.isPrivate,
       })
@@ -51,24 +57,6 @@ export default function ChatPage() {
     }
   }
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!messageInput.trim() || !selectedChannelId) return
-
-    setSending(true)
-    try {
-      await sendMessage({
-        content: messageInput,
-        channelId: selectedChannelId,
-      })
-      setMessageInput('')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to send message')
-    } finally {
-      setSending(false)
-    }
-  }
 
   return (
     <div className="h-screen bg-arcyn-bg flex">
@@ -92,7 +80,10 @@ export default function ChatPage() {
             <input
               type="text"
               placeholder="Search channels..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-white border border-arcyn-border rounded-lg focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 text-sm transition-all shadow-ios-inner"
+              aria-label="Search channels"
             />
           </div>
         </div>
@@ -101,19 +92,21 @@ export default function ChatPage() {
         <div className="flex-1 overflow-y-auto p-4">
           {channelsLoading ? (
             <div className="text-center text-ios-gray-500 py-8">Loading channels...</div>
-          ) : channels.length === 0 ? (
+          ) : filteredChannels.length === 0 ? (
             <div className="text-center text-ios-gray-500 py-8">
-              <p className="mb-2">No channels yet</p>
-              <button
-                onClick={() => setShowCreateChannel(true)}
-                className="text-ios-blue hover:text-ios-blue/80 text-sm"
-              >
-                Create your first channel
-              </button>
+              <p className="mb-2">{searchQuery ? 'No channels found' : 'No channels yet'}</p>
+              {!searchQuery && (
+                <button
+                  onClick={() => setShowCreateChannel(true)}
+                  className="text-ios-blue hover:text-ios-blue/80 text-sm"
+                >
+                  Create your first channel
+                </button>
+              )}
             </div>
           ) : (
             <div className="space-y-1">
-              {channels.map((channel) => (
+              {filteredChannels.map((channel) => (
                 <motion.button
                   key={channel.id}
                   whileHover={{ scale: 1.02 }}
@@ -160,88 +153,10 @@ export default function ChatPage() {
             </motion.div>
           </div>
         ) : (
-          <>
-            {/* Chat Header */}
-            <div className="h-16 border-b border-arcyn-border flex items-center justify-between px-6 glass">
-              <div className="flex items-center gap-3">
-                <Hash className="w-5 h-5 text-ios-blue" />
-                <div>
-                  <h2 className="text-lg font-bold text-ios-gray-900">
-                    {selectedChannel?.name}
-                  </h2>
-                  {selectedChannel?.description && (
-                    <p className="text-xs text-ios-gray-500">{selectedChannel.description}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Messages Area */}
-            <div className="flex-1 p-6 overflow-y-auto">
-              {messagesLoading ? (
-                <div className="text-center text-ios-gray-500 py-12">Loading messages...</div>
-              ) : messages.length === 0 ? (
-                <div className="text-center text-ios-gray-500 py-12">
-                  <p>No messages yet. Start the conversation! 🎉</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {messages.map((message) => (
-                    <motion.div
-                      key={message.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex gap-3"
-                    >
-                      {/* Avatar */}
-                      <div className="w-10 h-10 bg-gradient-to-br from-ios-blue to-ios-blue-light rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-bold text-white">
-                          {message.sender?.full_name?.[0] || '?'}
-                        </span>
-                      </div>
-
-                      {/* Message Content */}
-                      <div className="flex-1">
-                        <div className="flex items-baseline gap-2 mb-1">
-                          <span className="font-semibold text-ios-gray-900">
-                            {message.sender?.full_name || 'Unknown'}
-                          </span>
-                          <span className="text-xs text-ios-gray-500">
-                            {new Date(message.created_at).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </span>
-                        </div>
-                        <p className="text-ios-gray-700">{message.content}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Message Input */}
-            <div className="p-4 border-t border-arcyn-border glass">
-              <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  placeholder={`Message #${selectedChannel?.name}`}
-                  disabled={sending}
-                  className="flex-1 px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all disabled:opacity-50 shadow-ios-inner"
-                />
-                <button
-                  type="submit"
-                  disabled={sending || !messageInput.trim()}
-                  className="px-6 py-3 bg-ios-blue text-white font-semibold rounded-xl hover:bg-ios-blue/90 shadow-ios-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {sending ? 'Sending...' : 'Send'}
-                </button>
-              </form>
-            </div>
-          </>
+          <ChatWindow 
+            channelId={selectedChannelId || undefined}
+            channelName={selectedChannel?.name}
+          />
         )}
       </div>
 

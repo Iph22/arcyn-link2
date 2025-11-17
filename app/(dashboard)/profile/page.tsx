@@ -31,7 +31,9 @@ export default function ProfilePage() {
       const user = await getCurrentUser()
       setProfile(user)
     } catch (error) {
-      console.error('Error loading profile:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading profile:', error)
+      }
     } finally {
       setLoading(false)
     }
@@ -49,7 +51,9 @@ export default function ProfilePage() {
 
       setAchievements(data || [])
     } catch (error) {
-      console.error('Error loading achievements:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading achievements:', error)
+      }
     }
   }
 
@@ -71,7 +75,9 @@ export default function ProfilePage() {
         aiQueries: aiConversations.count || 0,
       })
     } catch (error) {
-      console.error('Error loading stats:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading stats:', error)
+      }
     }
   }
 
