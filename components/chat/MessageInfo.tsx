@@ -23,22 +23,22 @@ export default function MessageInfo({ message, onClose }: MessageInfoProps) {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-arcyn-surface border border-gold-500/20 rounded-3xl p-6 max-w-md w-full shadow-gold-glow-lg"
+        className="bg-white border border-arcyn-border rounded-3xl p-6 max-w-md w-full shadow-ios-xl"
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Message Info</h2>
+          <h2 className="text-xl font-bold text-ios-gray-900">Message Info</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gold-500/20 rounded-lg transition-colors"
+            className="p-2 hover:bg-ios-gray-50 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-400" />
+            <X className="w-5 h-5 text-ios-gray-500" />
           </button>
         </div>
 
         {/* Message Preview */}
-        <div className="mb-6 p-4 bg-arcyn-bg rounded-xl border border-gold-500/10">
-          <p className="text-sm text-gray-300 break-words">{message.content}</p>
+        <div className="mb-6 p-4 bg-ios-gray-50 rounded-xl border border-arcyn-border">
+          <p className="text-sm text-ios-gray-700 break-words">{message.content}</p>
         </div>
 
         {/* Info Grid */}
@@ -46,10 +46,10 @@ export default function MessageInfo({ message, onClose }: MessageInfoProps) {
           {/* Sent */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-400">Sent</span>
+              <Check className="w-4 h-4 text-ios-gray-500" />
+              <span className="text-sm text-ios-gray-600">Sent</span>
             </div>
-            <span className="text-sm text-white">
+            <span className="text-sm text-ios-gray-900">
               {format(new Date(message.created_at), 'MMM dd, yyyy HH:mm')}
             </span>
           </div>
@@ -58,10 +58,10 @@ export default function MessageInfo({ message, onClose }: MessageInfoProps) {
           {message.message_status && message.message_status.length > 0 && (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CheckCheck className="w-4 h-4 text-gray-400" />
-                <span className="text-sm text-gray-400">Delivered</span>
+                <CheckCheck className="w-4 h-4 text-ios-gray-500" />
+                <span className="text-sm text-ios-gray-600">Delivered</span>
               </div>
-              <span className="text-sm text-white">
+              <span className="text-sm text-ios-gray-900">
                 {message.message_status.filter((s: any) => s.delivered_at).length} recipients
               </span>
             </div>
@@ -71,10 +71,10 @@ export default function MessageInfo({ message, onClose }: MessageInfoProps) {
           {message.message_status && message.message_status.length > 0 && (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CheckCheck className="w-4 h-4 text-gold-500" />
-                <span className="text-sm text-gray-400">Read</span>
+                <CheckCheck className="w-4 h-4 text-ios-blue" />
+                <span className="text-sm text-ios-gray-600">Read</span>
               </div>
-              <span className="text-sm text-white">
+              <span className="text-sm text-ios-gray-900">
                 {message.message_status.filter((s: any) => s.read_at).length} recipients
               </span>
             </div>
@@ -83,8 +83,8 @@ export default function MessageInfo({ message, onClose }: MessageInfoProps) {
           {/* Edited */}
           {message.edited && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">Edited</span>
-              <span className="text-sm text-white">
+              <span className="text-sm text-ios-gray-600">Edited</span>
+              <span className="text-sm text-ios-gray-900">
                 {format(new Date(message.edited_at), 'MMM dd, yyyy HH:mm')}
               </span>
             </div>
@@ -92,22 +92,22 @@ export default function MessageInfo({ message, onClose }: MessageInfoProps) {
 
           {/* Message Type */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Type</span>
-            <span className="text-sm text-white capitalize">{message.message_type}</span>
+            <span className="text-sm text-ios-gray-600">Type</span>
+            <span className="text-sm text-ios-gray-900 capitalize">{message.message_type}</span>
           </div>
 
           {/* File Info */}
           {message.file_url && (
             <>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">File Name</span>
-                <span className="text-sm text-white truncate max-w-[200px]">
+                <span className="text-sm text-ios-gray-600">File Name</span>
+                <span className="text-sm text-ios-gray-900 truncate max-w-[200px]">
                   {message.file_name}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">File Size</span>
-                <span className="text-sm text-white">
+                <span className="text-sm text-ios-gray-600">File Size</span>
+                <span className="text-sm text-ios-gray-900">
                   {(message.file_size / 1024).toFixed(1)} KB
                 </span>
               </div>
@@ -117,20 +117,20 @@ export default function MessageInfo({ message, onClose }: MessageInfoProps) {
 
         {/* Read By List */}
         {message.message_status && message.message_status.length > 0 && (
-          <div className="mt-6 pt-6 border-t border-gold-500/10">
-            <h3 className="text-sm font-semibold text-white mb-3">Read By</h3>
+          <div className="mt-6 pt-6 border-t border-arcyn-border">
+            <h3 className="text-sm font-semibold text-ios-gray-900 mb-3">Read By</h3>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {message.message_status
                 .filter((s: any) => s.read_at)
                 .map((status: any) => (
                   <div key={status.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-gradient-to-br from-gold-400 to-gold-600 rounded-full flex items-center justify-center text-xs font-bold text-black">
+                      <div className="w-6 h-6 bg-gradient-to-br from-ios-blue to-ios-blue-light rounded-full flex items-center justify-center text-xs font-bold text-white">
                         {status.user?.full_name?.[0] || '?'}
                       </div>
-                      <span className="text-sm text-gray-300">{status.user?.full_name}</span>
+                      <span className="text-sm text-ios-gray-700">{status.user?.full_name}</span>
                     </div>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-ios-gray-500">
                       {format(new Date(status.read_at), 'HH:mm')}
                     </span>
                   </div>

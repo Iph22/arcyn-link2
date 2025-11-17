@@ -101,16 +101,16 @@ export default function FileUploader({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-arcyn-surface border border-gold-500/20 rounded-3xl p-8 max-w-lg w-full shadow-gold-glow-lg"
+        className="bg-white border border-arcyn-border rounded-3xl p-8 max-w-lg w-full shadow-ios-xl"
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Upload File</h2>
+          <h2 className="text-2xl font-bold text-ios-gray-900">Upload File</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gold-500/20 rounded-lg transition-colors"
+            className="p-2 hover:bg-ios-gray-50 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-400" />
+            <X className="w-5 h-5 text-ios-gray-500" />
           </button>
         </div>
 
@@ -120,37 +120,37 @@ export default function FileUploader({
             {...getRootProps()}
             className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${
               isDragActive
-                ? 'border-gold-500 bg-gold-500/10'
-                : 'border-gold-500/20 hover:border-gold-500/40 hover:bg-gold-500/5'
+                ? 'border-ios-blue bg-ios-blue/10'
+                : 'border-arcyn-border hover:border-ios-blue/40 hover:bg-ios-gray-50'
             }`}
           >
             <input {...getInputProps()} />
-            <Upload className="w-16 h-16 text-gold-500 mx-auto mb-4" />
-            <p className="text-white font-semibold mb-2">
+            <Upload className="w-16 h-16 text-ios-blue mx-auto mb-4" />
+            <p className="text-ios-gray-900 font-semibold mb-2">
               {isDragActive ? 'Drop file here' : 'Drag & drop file here'}
             </p>
-            <p className="text-sm text-gray-400 mb-4">or click to browse</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm text-ios-gray-600 mb-4">or click to browse</p>
+            <p className="text-xs text-ios-gray-500">
               Max file size: {maxSize}MB
             </p>
           </div>
         ) : (
           <div className="space-y-4">
             {/* File Preview */}
-            <div className="bg-arcyn-bg rounded-2xl p-6 border border-gold-500/20">
+            <div className="bg-ios-gray-50 rounded-2xl p-6 border border-arcyn-border">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gold-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <FileIcon className="w-8 h-8 text-gold-500" />
+                <div className="w-16 h-16 bg-ios-blue/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <FileIcon className="w-8 h-8 text-ios-blue" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-white truncate">{selectedFile.name}</p>
-                  <p className="text-sm text-gray-400">{formatFileSize(selectedFile.size)}</p>
+                  <p className="font-semibold text-ios-gray-900 truncate">{selectedFile.name}</p>
+                  <p className="text-sm text-ios-gray-600">{formatFileSize(selectedFile.size)}</p>
                 </div>
                 <button
                   onClick={() => setSelectedFile(null)}
-                  className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+                  className="p-2 hover:bg-ios-red/10 rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-red-400" />
+                  <X className="w-5 h-5 text-ios-red" />
                 </button>
               </div>
 

@@ -94,10 +94,10 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-4xl font-display font-bold text-ios-gray-900 mb-2">
+        <h1 className="text-4xl font-display font-bold text-ios-gray-900 dark:text-white mb-2">
           Welcome back, {profile?.full_name?.split(' ')[0]}! 👋
         </h1>
-        <p className="text-ios-gray-600">Here's what's happening with your Arcyn Link today</p>
+        <p className="text-ios-gray-600 dark:text-ios-gray-400">Here's what's happening with your Arcyn Link today</p>
       </motion.div>
 
       {/* Stats Grid */}
@@ -114,8 +114,8 @@ export default function DashboardPage() {
             <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mb-4 shadow-ios`}>
               <stat.icon className="w-6 h-6 text-white" />
             </div>
-            <p className="text-3xl font-bold text-ios-gray-900 mb-1">{stat.value}</p>
-            <p className="text-sm text-ios-gray-600">{stat.label}</p>
+            <p className="text-3xl font-bold text-ios-gray-900 dark:text-white mb-1">{stat.value}</p>
+            <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400">{stat.label}</p>
           </motion.div>
         ))}
       </div>
@@ -139,7 +139,7 @@ export default function DashboardPage() {
           </div>
           <div className="text-right">
             <p className="text-5xl font-bold text-ios-blue">{profile?.total_logins || 0}</p>
-            <p className="text-sm text-ios-gray-600">Total Logins</p>
+            <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400">Total Logins</p>
           </div>
         </div>
       </motion.div>
@@ -150,7 +150,7 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <h2 className="text-2xl font-bold text-ios-gray-900 mb-4">Quick Actions</h2>
+        <h2 className="text-2xl font-bold text-ios-gray-900 dark:text-white mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <motion.a
             href="/dashboard/chat"
@@ -159,8 +159,8 @@ export default function DashboardPage() {
             className="glass-card rounded-2xl p-6 hover:shadow-ios-lg transition-all cursor-pointer"
           >
             <MessageSquare className="w-8 h-8 text-ios-blue mb-3" />
-            <h3 className="text-lg font-bold text-ios-gray-900 mb-1">Start Chatting</h3>
-            <p className="text-sm text-ios-gray-600">Connect with your team</p>
+            <h3 className="text-lg font-bold text-ios-gray-900 dark:text-white mb-1">Start Chatting</h3>
+            <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400">Connect with your team</p>
           </motion.a>
 
           <motion.a
@@ -170,8 +170,8 @@ export default function DashboardPage() {
             className="glass-card rounded-2xl p-6 hover:shadow-ios-lg transition-all cursor-pointer"
           >
             <Bot className="w-8 h-8 text-ios-purple mb-3" />
-            <h3 className="text-lg font-bold text-ios-gray-900 mb-1">AI Playground</h3>
-            <p className="text-sm text-ios-gray-600">Get AI assistance</p>
+            <h3 className="text-lg font-bold text-ios-gray-900 dark:text-white mb-1">AI Playground</h3>
+            <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400">Get AI assistance</p>
           </motion.a>
 
           <motion.a
@@ -181,8 +181,8 @@ export default function DashboardPage() {
             className="glass-card rounded-2xl p-6 hover:shadow-ios-lg transition-all cursor-pointer"
           >
             <Trophy className="w-8 h-8 text-ios-yellow mb-3" />
-            <h3 className="text-lg font-bold text-ios-gray-900 mb-1">View Leaderboard</h3>
-            <p className="text-sm text-ios-gray-600">See top contributors</p>
+            <h3 className="text-lg font-bold text-ios-gray-900 dark:text-white mb-1">View Leaderboard</h3>
+            <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400">See top contributors</p>
           </motion.a>
         </div>
       </motion.div>

@@ -176,7 +176,7 @@ export default function CallsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-arcyn-bg p-8">
+    <div className="min-h-screen bg-ios-gray-50 dark:bg-black p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
@@ -187,7 +187,7 @@ export default function CallsPage() {
           <h1 className="text-4xl font-display font-bold bg-gradient-to-r from-ios-blue to-ios-blue-light bg-clip-text text-transparent mb-2">
             Calls
           </h1>
-          <p className="text-ios-gray-600">Start a call or view your call history</p>
+          <p className="text-ios-gray-600 dark:text-ios-gray-400">Start a call or view your call history</p>
         </motion.div>
 
         {/* Call Actions */}
@@ -255,7 +255,7 @@ export default function CallsPage() {
               <div className="w-20 h-20 bg-ios-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Phone className="w-10 h-10 text-ios-gray-500" />
               </div>
-              <p className="text-ios-gray-600">No calls yet</p>
+              <p className="text-ios-gray-600 dark:text-ios-gray-400">No calls yet</p>
               <p className="text-sm text-ios-gray-500 mt-1">Start your first call above!</p>
             </div>
           ) : (
@@ -281,7 +281,7 @@ export default function CallsPage() {
                       <p className="text-ios-gray-900 font-semibold">
                         {call.call_type === 'video' ? 'Video Call' : 'Audio Call'}
                       </p>
-                      <p className="text-sm text-ios-gray-600">
+                      <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400">
                         {new Date(call.created_at).toLocaleString()}
                       </p>
                     </div>

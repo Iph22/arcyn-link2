@@ -83,14 +83,14 @@ export default function CreateChannelModal({ onClose, onSuccess }: CreateChannel
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-arcyn-surface border border-gold-500/20 rounded-3xl p-6 max-w-md w-full shadow-gold-glow-lg"
+        className="bg-white border border-arcyn-border rounded-3xl p-6 max-w-md w-full shadow-ios-xl"
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Create Channel</h2>
+          <h2 className="text-xl font-bold text-ios-gray-900">Create Channel</h2>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-arcyn-bg"
+            className="p-2 text-ios-gray-500 hover:text-ios-gray-900 transition-colors rounded-lg hover:bg-ios-gray-50"
           >
             <X className="w-5 h-5" />
           </button>
@@ -100,17 +100,17 @@ export default function CreateChannelModal({ onClose, onSuccess }: CreateChannel
         <div className="space-y-4">
           {/* Channel Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-ios-gray-700 mb-2">
               Channel Name *
             </label>
             <div className="relative">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ios-gray-500" />
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="general-chat"
-                className="w-full pl-10 pr-4 py-2 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white placeholder-gray-500 transition-all"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all shadow-ios-inner"
                 maxLength={50}
               />
             </div>
@@ -118,14 +118,14 @@ export default function CreateChannelModal({ onClose, onSuccess }: CreateChannel
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-ios-gray-700 mb-2">
               Description
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What's this channel about?"
-              className="w-full px-4 py-2 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white placeholder-gray-500 resize-none transition-all"
+              className="w-full px-4 py-2 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 resize-none transition-all shadow-ios-inner"
               rows={3}
               maxLength={200}
             />
@@ -133,7 +133,7 @@ export default function CreateChannelModal({ onClose, onSuccess }: CreateChannel
 
           {/* Branch Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-ios-gray-700 mb-2">
               Branch
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -141,8 +141,8 @@ export default function CreateChannelModal({ onClose, onSuccess }: CreateChannel
                 onClick={() => setBranch('arcyn_x')}
                 className={`p-3 rounded-xl border-2 transition-all ${
                   branch === 'arcyn_x'
-                    ? 'border-blue-500 bg-blue-500/20 text-blue-400'
-                    : 'border-gold-500/20 bg-arcyn-bg text-gray-400 hover:border-blue-500/50'
+                    ? 'border-ios-blue bg-ios-blue/10 text-ios-blue'
+                    : 'border-arcyn-border bg-ios-gray-50 text-ios-gray-600 hover:border-ios-blue/50'
                 }`}
               >
                 <div className="text-xs font-semibold">Arcyn.X</div>
@@ -151,8 +151,8 @@ export default function CreateChannelModal({ onClose, onSuccess }: CreateChannel
                 onClick={() => setBranch('modulex')}
                 className={`p-3 rounded-xl border-2 transition-all ${
                   branch === 'modulex'
-                    ? 'border-green-500 bg-green-500/20 text-green-400'
-                    : 'border-gold-500/20 bg-arcyn-bg text-gray-400 hover:border-green-500/50'
+                    ? 'border-ios-green bg-ios-green/10 text-ios-green'
+                    : 'border-arcyn-border bg-ios-gray-50 text-ios-gray-600 hover:border-ios-green/50'
                 }`}
               >
                 <div className="text-xs font-semibold">ModuleX</div>
@@ -161,8 +161,8 @@ export default function CreateChannelModal({ onClose, onSuccess }: CreateChannel
                 onClick={() => setBranch('nexalab')}
                 className={`p-3 rounded-xl border-2 transition-all ${
                   branch === 'nexalab'
-                    ? 'border-orange-500 bg-orange-500/20 text-orange-400'
-                    : 'border-gold-500/20 bg-arcyn-bg text-gray-400 hover:border-orange-500/50'
+                    ? 'border-ios-orange bg-ios-orange/10 text-ios-orange'
+                    : 'border-arcyn-border bg-ios-gray-50 text-ios-gray-600 hover:border-ios-orange/50'
                 }`}
               >
                 <div className="text-xs font-semibold">NexaLab</div>
@@ -172,19 +172,19 @@ export default function CreateChannelModal({ onClose, onSuccess }: CreateChannel
 
           {/* Privacy Toggle */}
           <div>
-            <label className="flex items-center justify-between p-3 bg-arcyn-bg rounded-xl cursor-pointer hover:bg-arcyn-bg/80 transition-colors">
+            <label className="flex items-center justify-between p-3 bg-ios-gray-50 rounded-xl cursor-pointer hover:bg-ios-gray-100 transition-colors border border-arcyn-border">
               <div className="flex items-center gap-3">
-                <Lock className="w-5 h-5 text-gray-400" />
+                <Lock className="w-5 h-5 text-ios-gray-500" />
                 <div>
-                  <div className="text-sm font-medium text-white">Private Channel</div>
-                  <div className="text-xs text-gray-400">Only invited members can join</div>
+                  <div className="text-sm font-medium text-ios-gray-900">Private Channel</div>
+                  <div className="text-xs text-ios-gray-600">Only invited members can join</div>
                 </div>
               </div>
               <input
                 type="checkbox"
                 checked={isPrivate}
                 onChange={(e) => setIsPrivate(e.target.checked)}
-                className="w-5 h-5 rounded border-gold-500/20 bg-arcyn-surface text-gold-500 focus:ring-2 focus:ring-gold-500/20"
+                className="w-5 h-5 rounded border-arcyn-border bg-white text-ios-blue focus:ring-2 focus:ring-ios-blue/20"
               />
             </label>
           </div>
@@ -195,14 +195,14 @@ export default function CreateChannelModal({ onClose, onSuccess }: CreateChannel
           <button
             onClick={onClose}
             disabled={creating}
-            className="flex-1 px-4 py-2 bg-arcyn-bg border border-gold-500/20 rounded-xl text-white hover:bg-arcyn-bg/80 transition-colors disabled:opacity-50"
+            className="flex-1 px-4 py-2 bg-white border border-arcyn-border rounded-xl text-ios-gray-700 hover:bg-ios-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-ios-inner"
           >
             Cancel
           </button>
           <button
             onClick={handleCreate}
             disabled={creating || !name.trim()}
-            className="flex-1 px-4 py-2 bg-gradient-to-r from-gold-500 to-gold-600 rounded-xl text-black font-semibold hover:shadow-gold-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-2 bg-ios-blue text-white font-semibold rounded-xl hover:bg-ios-blue/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-ios-md"
           >
             {creating ? 'Creating...' : 'Create Channel'}
           </button>

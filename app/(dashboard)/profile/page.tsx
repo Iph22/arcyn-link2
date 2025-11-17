@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, Flame, Star, Calendar, MessageSquare, Phone, Code, Edit2, Award } from 'lucide-react'
-import { getCurrentUser } from '@/lib/supabase/auth'
+import { Trophy, Flame, Star, Calendar, MessageSquare, Phone, Code, Edit2, Award, Camera } from 'lucide-react'
+import { useProfile } from '@/lib/contexts/ProfileContext'
 import { supabase } from '@/lib/supabase/client'
-import type { Profile } from '@/lib/supabase/client'
 import EditProfileModal from '@/components/profile/EditProfileModal'
+import Avatar from '@/components/ui/Avatar'
+import AvatarUpload from '@/components/settings/AvatarUpload'
+import toast from 'react-hot-toast'
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<Profile | null>(null)
+  const { profile, refreshProfile } = useProfile()
   const [achievements, setAchievements] = useState<any[]>([])
   const [stats, setStats] = useState({
     messagesCount: 0,
@@ -19,35 +21,24 @@ export default function ProfilePage() {
   })
   const [loading, setLoading] = useState(true)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showAvatarUpload, setShowAvatarUpload] = useState(false)
 
   useEffect(() => {
-    loadProfile()
-    loadAchievements()
-    loadStats()
-  }, [])
-
-  async function loadProfile() {
-    try {
-      const user = await getCurrentUser()
-      setProfile(user)
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error loading profile:', error)
-      }
-    } finally {
+    if (profile) {
+      loadAchievements()
+      loadStats()
       setLoading(false)
     }
-  }
+  }, [profile])
 
   async function loadAchievements() {
     try {
-      const user = await getCurrentUser()
-      if (!user) return
+      if (!profile) return
 
       const { data } = await supabase
         .from('user_achievements')
         .select('*, achievement:achievements(*)')
-        .eq('user_id', user.id)
+        .eq('user_id', profile.id)
 
       setAchievements(data || [])
     } catch (error) {
@@ -59,13 +50,12 @@ export default function ProfilePage() {
 
   async function loadStats() {
     try {
-      const user = await getCurrentUser()
-      if (!user) return
+      if (!profile) return
 
       const [messages, calls, aiConversations] = await Promise.all([
-        supabase.from('messages').select('id', { count: 'exact' }).eq('sender_id', user.id),
-        supabase.from('call_participants').select('id', { count: 'exact' }).eq('user_id', user.id),
-        supabase.from('ai_conversations').select('id', { count: 'exact' }).eq('user_id', user.id),
+        supabase.from('messages').select('id', { count: 'exact' }).eq('sender_id', profile.id),
+        supabase.from('call_participants').select('id', { count: 'exact' }).eq('user_id', profile.id),
+        supabase.from('ai_conversations').select('id', { count: 'exact' }).eq('user_id', profile.id),
       ])
 
       setStats({
@@ -109,16 +99,33 @@ export default function ProfilePage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-arcyn-surface rounded-3xl border border-gold-500/20 p-8 mb-6"
+        className="bg-white dark:bg-ios-gray-800 rounded-3xl border border-arcyn-border dark:border-ios-gray-700 p-8 mb-6 shadow-ios"
       >
         <div className="flex items-start gap-6">
           {/* Avatar */}
           <div className="relative">
-            <div className={`w-32 h-32 bg-gradient-to-br ${rank.color} rounded-3xl flex items-center justify-center text-5xl font-bold text-white shadow-gold-glow`}>
-              {profile.full_name[0]}
+            <div className="relative w-32 h-32">
+              <div className="w-32 h-32 rounded-3xl overflow-hidden shadow-gold-glow">
+                <Avatar 
+                  src={profile.avatar_url} 
+                  name={profile.full_name}
+                  size="xl"
+                  className="w-full h-full rounded-3xl"
+                />
+              </div>
+              {/* Change Avatar Button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowAvatarUpload(!showAvatarUpload)}
+                className="absolute bottom-0 right-0 w-10 h-10 bg-ios-blue rounded-full flex items-center justify-center shadow-lg hover:bg-ios-blue/90 transition-colors border-2 border-white dark:border-ios-gray-800 z-20"
+                title="Change profile picture"
+              >
+                <Camera className="w-5 h-5 text-white" />
+              </motion.button>
             </div>
             {/* Rank Badge */}
-            <div className={`absolute -bottom-2 -right-2 px-3 py-1 bg-gradient-to-r ${rank.color} rounded-full text-xs font-bold text-white shadow-lg`}>
+            <div className={`absolute -bottom-2 -right-2 px-3 py-1 bg-gradient-to-r ${rank.color} rounded-full text-xs font-bold text-white shadow-lg z-10`}>
               {rank.icon} {rank.name}
             </div>
           </div>
@@ -127,31 +134,31 @@ export default function ProfilePage() {
           <div className="flex-1">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h1 className="text-3xl font-display font-bold text-white mb-1">{profile.full_name}</h1>
-                <p className="text-gray-400 mb-2">@{profile.username}</p>
-                <p className="text-gray-300 mb-4">{profile.bio || 'No bio yet'}</p>
+                <h1 className="text-3xl font-display font-bold text-ios-gray-900 dark:text-white mb-1">{profile.full_name}</h1>
+                <p className="text-ios-gray-600 dark:text-ios-gray-400 mb-2">@{profile.username}</p>
+                <p className="text-ios-gray-700 dark:text-ios-gray-300 mb-4">{profile.bio || 'No bio yet'}</p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowEditModal(true)}
-                className="p-2 bg-gold-500/20 rounded-lg hover:bg-gold-500/30 transition-colors"
+                className="p-2 bg-ios-blue/10 dark:bg-ios-blue/20 rounded-lg hover:bg-ios-blue/20 dark:hover:bg-ios-blue/30 transition-colors"
               >
-                <Edit2 className="w-5 h-5 text-gold-500" />
+                <Edit2 className="w-5 h-5 text-ios-blue" />
               </motion.button>
             </div>
 
             <div className="flex items-center gap-4 text-sm">
               <div className={`px-3 py-1 rounded-full ${
                 profile.branch === 'arcyn_x'
-                  ? 'bg-blue-500/20 text-blue-400'
+                  ? 'bg-ios-blue/10 dark:bg-ios-blue/20 text-ios-blue'
                   : profile.branch === 'modulex'
-                  ? 'bg-green-500/20 text-green-400'
-                  : 'bg-purple-500/20 text-purple-400'
+                  ? 'bg-ios-green/10 dark:bg-ios-green/20 text-ios-green'
+                  : 'bg-ios-purple/10 dark:bg-ios-purple/20 text-ios-purple'
               }`}>
                 {profile.branch.replace('_', '.')}
               </div>
-              <div className="flex items-center gap-1 text-gray-400">
+              <div className="flex items-center gap-1 text-ios-gray-600 dark:text-ios-gray-400">
                 <Calendar className="w-4 h-4" />
                 <span>Joined {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Unknown'}</span>
               </div>
@@ -160,20 +167,20 @@ export default function ProfilePage() {
 
           {/* Rank Score */}
           <div className="text-center">
-            <div className="w-24 h-24 bg-gradient-to-br from-gold-500 to-gold-600 rounded-2xl flex flex-col items-center justify-center shadow-gold-glow">
-              <Trophy className="w-8 h-8 text-black mb-1" />
-              <span className="text-2xl font-bold text-black">{profile.rank_score}</span>
+            <div className="w-24 h-24 bg-gradient-to-br from-ios-blue to-ios-blue-light rounded-2xl flex flex-col items-center justify-center shadow-ios-lg">
+              <Trophy className="w-8 h-8 text-white mb-1" />
+              <span className="text-2xl font-bold text-white">{profile.rank_score}</span>
             </div>
-            <p className="text-xs text-gray-400 mt-2">Rank Score</p>
+            <p className="text-xs text-ios-gray-600 dark:text-ios-gray-400 mt-2">Rank Score</p>
           </div>
         </div>
       </motion.div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <StatCard icon={MessageSquare} label="Messages" value={stats.messagesCount} color="from-blue-500 to-purple-500" />
-        <StatCard icon={Phone} label="Calls" value={stats.callsCount} color="from-green-500 to-teal-500" />
-        <StatCard icon={Code} label="Code Shares" value={stats.codeShares} color="from-orange-500 to-red-500" />
+        <StatCard icon={MessageSquare} label="Messages" value={stats.messagesCount} color="from-ios-blue to-ios-blue-light" />
+        <StatCard icon={Phone} label="Calls" value={stats.callsCount} color="from-ios-green to-teal-500" />
+        <StatCard icon={Code} label="Code Shares" value={stats.codeShares} color="from-ios-orange to-red-500" />
         <StatCard icon={Star} label="AI Queries" value={stats.aiQueries} color="from-pink-500 to-rose-500" />
       </div>
 
@@ -182,21 +189,21 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-arcyn-surface rounded-3xl border border-gold-500/20 p-6 mb-6"
+        className="bg-white dark:bg-ios-gray-800 rounded-3xl border border-arcyn-border dark:border-ios-gray-700 p-6 mb-6 shadow-ios"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-ios-orange to-ios-red rounded-2xl flex items-center justify-center">
               <Flame className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-white">{profile.login_streak} Days</h3>
-              <p className="text-gray-400">Login Streak 🔥</p>
+              <h3 className="text-2xl font-bold text-ios-gray-900 dark:text-white">{profile.login_streak} Days</h3>
+              <p className="text-ios-gray-600 dark:text-ios-gray-400">Login Streak 🔥</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-3xl font-bold text-gold-500">{profile.total_logins}</p>
-            <p className="text-sm text-gray-400">Total Logins</p>
+            <p className="text-3xl font-bold text-ios-blue">{profile.total_logins}</p>
+            <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400">Total Logins</p>
           </div>
         </div>
       </motion.div>
@@ -206,10 +213,10 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="bg-arcyn-surface rounded-3xl border border-gold-500/20 p-6"
+        className="bg-white dark:bg-ios-gray-800 rounded-3xl border border-arcyn-border dark:border-ios-gray-700 p-6 shadow-ios"
       >
-        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-          <Award className="w-6 h-6 text-gold-500" />
+        <h2 className="text-xl font-bold text-ios-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <Award className="w-6 h-6 text-ios-blue" />
           Achievements
         </h2>
         <div className="grid grid-cols-3 gap-4">
@@ -218,19 +225,19 @@ export default function ProfilePage() {
               <motion.div
                 key={userAchievement.id}
                 whileHover={{ scale: 1.05 }}
-                className="bg-arcyn-bg rounded-2xl p-4 border border-gold-500/20 text-center hover:border-gold-500/40 transition-all cursor-pointer"
+                className="bg-ios-gray-50 dark:bg-ios-gray-900 rounded-2xl p-4 border border-arcyn-border dark:border-ios-gray-700 text-center hover:border-ios-blue/40 transition-all cursor-pointer"
               >
                 <div className="text-4xl mb-2">{userAchievement.achievement.icon}</div>
-                <p className="font-bold text-white text-sm">{userAchievement.achievement.name}</p>
-                <p className="text-xs text-gray-400 mt-1">{userAchievement.achievement.description}</p>
+                <p className="font-bold text-ios-gray-900 dark:text-white text-sm">{userAchievement.achievement.name}</p>
+                <p className="text-xs text-ios-gray-600 dark:text-ios-gray-400 mt-1">{userAchievement.achievement.description}</p>
                 <div className="flex items-center justify-center gap-1 mt-2">
-                  <Star className="w-3 h-3 text-gold-500" />
-                  <span className="text-xs text-gold-500">+{userAchievement.achievement.points}</span>
+                  <Star className="w-3 h-3 text-ios-blue" />
+                  <span className="text-xs text-ios-blue">+{userAchievement.achievement.points}</span>
                 </div>
               </motion.div>
             ))
           ) : (
-            <div className="col-span-3 text-center py-8 text-gray-400">
+            <div className="col-span-3 text-center py-8 text-ios-gray-600 dark:text-ios-gray-400">
               <Trophy className="w-12 h-12 mx-auto mb-2 opacity-30" />
               <p>No achievements yet. Keep contributing!</p>
             </div>
@@ -238,13 +245,42 @@ export default function ProfilePage() {
         </div>
       </motion.div>
 
+      {/* Avatar Upload Section */}
+      {showAvatarUpload && profile && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="bg-white dark:bg-ios-gray-800 rounded-3xl border border-arcyn-border dark:border-ios-gray-700 p-6 mb-6 shadow-ios"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-ios-gray-900 dark:text-white">Change Profile Picture</h3>
+            <button
+              onClick={() => setShowAvatarUpload(false)}
+              className="text-ios-gray-500 hover:text-ios-gray-900 dark:hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+          <AvatarUpload
+            currentAvatarUrl={profile.avatar_url}
+            userId={profile.id}
+            onUploadComplete={async (url) => {
+              await refreshProfile()
+              setShowAvatarUpload(false)
+              toast.success('Profile picture updated!')
+            }}
+          />
+        </motion.div>
+      )}
+
       {/* Edit Profile Modal */}
       {showEditModal && profile && (
         <EditProfileModal
           profile={profile}
           onClose={() => setShowEditModal(false)}
-          onSuccess={() => {
-            loadProfile()
+          onSuccess={async () => {
+            await refreshProfile()
             loadAchievements()
             loadStats()
           }}
@@ -260,13 +296,13 @@ function StatCard({ icon: Icon, label, value, color }: any) {
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ scale: 1.05 }}
-      className="bg-arcyn-surface rounded-2xl border border-gold-500/20 p-4 hover:border-gold-500/40 transition-all"
+      className="bg-white dark:bg-ios-gray-800 rounded-2xl border border-arcyn-border dark:border-ios-gray-700 p-4 hover:border-ios-blue/40 transition-all shadow-ios"
     >
       <div className={`w-12 h-12 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center mb-3`}>
         <Icon className="w-6 h-6 text-white" />
       </div>
-      <p className="text-2xl font-bold text-white">{value}</p>
-      <p className="text-sm text-gray-400">{label}</p>
+      <p className="text-2xl font-bold text-ios-gray-900 dark:text-white">{value}</p>
+      <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400">{label}</p>
     </motion.div>
   )
 }

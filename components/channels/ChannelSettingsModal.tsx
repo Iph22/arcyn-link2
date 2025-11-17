@@ -101,16 +101,16 @@ export default function ChannelSettingsModal({ channel, onClose, onSuccess }: Ch
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className="bg-arcyn-surface rounded-3xl border border-gold-500/20 p-8 max-w-md w-full"
+          className="bg-white rounded-3xl border border-arcyn-border p-8 max-w-md w-full shadow-ios-xl"
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-display font-bold text-white">Channel Settings</h2>
+            <h2 className="text-2xl font-display font-bold text-ios-gray-900">Channel Settings</h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-arcyn-bg rounded-lg transition-colors"
+              className="p-2 hover:bg-ios-gray-50 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-gray-400" />
+              <X className="w-5 h-5 text-ios-gray-500" />
             </button>
           </div>
 
@@ -118,7 +118,7 @@ export default function ChannelSettingsModal({ channel, onClose, onSuccess }: Ch
           <form onSubmit={handleUpdate} className="space-y-4 mb-6">
             {/* Channel Name */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-ios-gray-700 mb-2">
                 Channel Name *
               </label>
               <input
@@ -126,14 +126,14 @@ export default function ChannelSettingsModal({ channel, onClose, onSuccess }: Ch
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g., general, announcements"
-                className="w-full px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white placeholder-gray-500 transition-all"
+                className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all shadow-ios-inner"
                 required
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-ios-gray-700 mb-2">
                 Description
               </label>
               <textarea
@@ -141,24 +141,24 @@ export default function ChannelSettingsModal({ channel, onClose, onSuccess }: Ch
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="What's this channel about?"
                 rows={3}
-                className="w-full px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white placeholder-gray-500 transition-all resize-none"
+                className="w-full px-4 py-3 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 transition-all resize-none shadow-ios-inner"
               />
             </div>
 
             {/* Privacy Toggle */}
             <div>
-              <label className="flex items-center justify-between p-4 bg-arcyn-bg rounded-xl border border-gold-500/20 cursor-pointer hover:border-gold-500/40 transition-all">
+              <label className="flex items-center justify-between p-4 bg-ios-gray-50 rounded-xl border border-arcyn-border cursor-pointer hover:bg-ios-gray-100 transition-all">
                 <div className="flex items-center gap-3">
                   {formData.isPrivate ? (
-                    <Lock className="w-5 h-5 text-gold-500" />
+                    <Lock className="w-5 h-5 text-ios-blue" />
                   ) : (
-                    <Globe className="w-5 h-5 text-gray-400" />
+                    <Globe className="w-5 h-5 text-ios-gray-500" />
                   )}
                   <div>
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-sm font-semibold text-ios-gray-900">
                       {formData.isPrivate ? 'Private Channel' : 'Public Channel'}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-ios-gray-600">
                       {formData.isPrivate ? 'Only invited members can join' : 'Anyone can join'}
                     </p>
                   </div>
@@ -167,7 +167,7 @@ export default function ChannelSettingsModal({ channel, onClose, onSuccess }: Ch
                   type="checkbox"
                   checked={formData.isPrivate}
                   onChange={(e) => setFormData({ ...formData, isPrivate: e.target.checked })}
-                  className="w-5 h-5 rounded bg-arcyn-surface border-gold-500/20 text-gold-500 focus:ring-2 focus:ring-gold-500/20"
+                  className="w-5 h-5 rounded border-arcyn-border bg-white text-ios-blue focus:ring-2 focus:ring-ios-blue/20"
                 />
               </label>
             </div>
@@ -176,7 +176,7 @@ export default function ChannelSettingsModal({ channel, onClose, onSuccess }: Ch
             <button
               type="submit"
               disabled={saving}
-              className="w-full px-4 py-3 bg-gradient-to-r from-gold-500 to-gold-600 text-black font-bold rounded-xl hover:shadow-gold-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full px-4 py-3 bg-ios-blue text-white font-bold rounded-xl hover:bg-ios-blue/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-ios-md"
             >
               {saving ? (
                 <>
@@ -193,12 +193,12 @@ export default function ChannelSettingsModal({ channel, onClose, onSuccess }: Ch
           </form>
 
           {/* Danger Zone */}
-          <div className="pt-6 border-t border-red-500/20">
-            <h3 className="text-sm font-semibold text-red-400 mb-3">Danger Zone</h3>
+          <div className="pt-6 border-t border-arcyn-border">
+            <h3 className="text-sm font-semibold text-ios-red mb-3">Danger Zone</h3>
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="w-full px-4 py-3 bg-red-500/20 border border-red-500/40 text-red-400 font-semibold rounded-xl hover:bg-red-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full px-4 py-3 bg-ios-red/10 border border-ios-red/40 text-ios-red font-semibold rounded-xl hover:bg-ios-red/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {deleting ? (
                 <>

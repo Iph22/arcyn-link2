@@ -120,7 +120,7 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-arcyn-bg p-8">
+    <div className="min-h-screen bg-ios-gray-50 dark:bg-black p-8">
       {/* Header */}
       <div className="max-w-6xl mx-auto mb-8">
         <div className="flex items-center justify-between">
@@ -131,7 +131,7 @@ export default function LeaderboardPage() {
             <h1 className="text-4xl font-display font-bold bg-gradient-to-r from-ios-blue to-ios-blue-light bg-clip-text text-transparent mb-2">
               Leaderboard
             </h1>
-            <p className="text-ios-gray-600">Top contributors across Arcyn</p>
+            <p className="text-ios-gray-600 dark:text-ios-gray-400">Top contributors across Arcyn</p>
           </motion.div>
 
           {/* Timeframe Selector */}
@@ -148,7 +148,7 @@ export default function LeaderboardPage() {
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                   timeframe === tf
                     ? 'bg-ios-blue text-white'
-                    : 'text-ios-gray-600 hover:text-ios-gray-900'
+                    : 'text-ios-gray-600 dark:text-ios-gray-400 hover:text-ios-gray-900 dark:hover:text-white'
                 }`}
               >
                 {tf.charAt(0).toUpperCase() + tf.slice(1).replace('-', ' ')}
@@ -178,20 +178,20 @@ export default function LeaderboardPage() {
                     2
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-ios-gray-900 mb-1">{leaderboard[1].full_name}</h3>
-                <p className="text-sm text-ios-gray-600 mb-3">@{leaderboard[1].username}</p>
+                <h3 className="text-xl font-bold text-ios-gray-900 dark:text-white mb-1">{leaderboard[1].full_name}</h3>
+                <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400 mb-3">@{leaderboard[1].username}</p>
                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 ${
                   leaderboard[1].branch === 'arcyn_x'
-                    ? 'bg-blue-500/20 text-blue-400'
+                    ? 'bg-ios-blue/20 text-ios-blue'
                     : leaderboard[1].branch === 'modulex'
-                    ? 'bg-green-500/20 text-green-400'
-                    : 'bg-orange-500/20 text-orange-400'
+                    ? 'bg-ios-green/20 text-ios-green'
+                    : 'bg-ios-orange/20 text-ios-orange'
                 }`}>
                   {leaderboard[1].branch.replace('_', '.')}
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <Medal className="w-5 h-5 text-ios-gray-500" />
-                  <span className="text-2xl font-bold text-ios-gray-900">
+                  <Medal className="w-5 h-5 text-ios-gray-500 dark:text-ios-gray-400" />
+                  <span className="text-2xl font-bold text-ios-gray-900 dark:text-white">
                     {timeframe === 'all-time' ? leaderboard[1].rank_score : leaderboard[1].timeframe_score}
                   </span>
                 </div>
@@ -221,20 +221,20 @@ export default function LeaderboardPage() {
                     1
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold text-ios-gray-900 mb-1">{leaderboard[0].full_name}</h3>
+                <h3 className="text-2xl font-bold text-ios-gray-900 dark:text-white mb-1">{leaderboard[0].full_name}</h3>
                 <p className="text-sm text-ios-orange mb-3">@{leaderboard[0].username}</p>
                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4 ${
                   leaderboard[0].branch === 'arcyn_x'
-                    ? 'bg-blue-500/30 text-blue-300'
+                    ? 'bg-ios-blue/30 text-ios-blue'
                     : leaderboard[0].branch === 'modulex'
-                    ? 'bg-green-500/30 text-green-300'
-                    : 'bg-orange-500/30 text-orange-300'
+                    ? 'bg-ios-green/30 text-ios-green'
+                    : 'bg-ios-orange/30 text-ios-orange'
                 }`}>
                   {leaderboard[0].branch.replace('_', '.')}
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <Trophy className="w-6 h-6 text-ios-yellow" />
-                  <span className="text-3xl font-bold text-ios-gray-900">
+                  <span className="text-3xl font-bold text-ios-gray-900 dark:text-white">
                     {timeframe === 'all-time' ? leaderboard[0].rank_score : leaderboard[0].timeframe_score}
                   </span>
                 </div>
@@ -259,20 +259,20 @@ export default function LeaderboardPage() {
                     3
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-ios-gray-900 mb-1">{leaderboard[2].full_name}</h3>
+                <h3 className="text-xl font-bold text-ios-gray-900 dark:text-white mb-1">{leaderboard[2].full_name}</h3>
                 <p className="text-sm text-ios-orange mb-3">@{leaderboard[2].username}</p>
                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 ${
                   leaderboard[2].branch === 'arcyn_x'
-                    ? 'bg-blue-500/20 text-blue-400'
+                    ? 'bg-ios-blue/20 text-ios-blue'
                     : leaderboard[2].branch === 'modulex'
-                    ? 'bg-green-500/20 text-green-400'
-                    : 'bg-orange-500/20 text-orange-400'
+                    ? 'bg-ios-green/20 text-ios-green'
+                    : 'bg-ios-orange/20 text-ios-orange'
                 }`}>
                   {leaderboard[2].branch.replace('_', '.')}
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <Medal className="w-5 h-5 text-orange-400" />
-                  <span className="text-2xl font-bold text-white">
+                  <Medal className="w-5 h-5 text-ios-orange" />
+                  <span className="text-2xl font-bold text-ios-gray-900 dark:text-white">
                     {timeframe === 'all-time' ? leaderboard[2].rank_score : leaderboard[2].timeframe_score}
                   </span>
                 </div>
@@ -290,14 +290,14 @@ export default function LeaderboardPage() {
           transition={{ delay: 0.4 }}
           className="glass-card rounded-3xl overflow-hidden shadow-ios-lg"
         >
-          <div className="grid grid-cols-5 gap-4 p-4 border-b border-arcyn-border text-sm font-semibold text-ios-gray-600">
+          <div className="grid grid-cols-5 gap-4 p-4 border-b border-arcyn-border dark:border-ios-gray-700 text-sm font-semibold text-ios-gray-600 dark:text-ios-gray-400">
             <div>Rank</div>
             <div className="col-span-2">User</div>
             <div>Branch</div>
             <div className="text-right">Score</div>
           </div>
 
-          <div className="divide-y divide-arcyn-border">
+          <div className="divide-y divide-arcyn-border dark:divide-ios-gray-700">
             {leaderboard.slice(3).map((user, index) => {
               const score = timeframe === 'all-time' ? user.rank_score : user.timeframe_score
               const rank = getRankBadge(score)
@@ -307,10 +307,10 @@ export default function LeaderboardPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 + index * 0.05 }}
-                  className="grid grid-cols-5 gap-4 p-4 hover:bg-ios-gray-50 transition-colors"
+                  className="grid grid-cols-5 gap-4 p-4 hover:bg-ios-gray-50 dark:hover:bg-ios-gray-800 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl font-bold text-ios-gray-500">{index + 4}</span>
+                    <span className="text-2xl font-bold text-ios-gray-500 dark:text-ios-gray-400">{index + 4}</span>
                   </div>
 
                   <div className="col-span-2 flex items-center gap-3">
@@ -318,18 +318,18 @@ export default function LeaderboardPage() {
                       {user.full_name[0]}
                     </div>
                     <div>
-                      <p className="font-semibold text-ios-gray-900">{user.full_name}</p>
-                      <p className="text-sm text-ios-gray-600">@{user.username}</p>
+                      <p className="font-semibold text-ios-gray-900 dark:text-white">{user.full_name}</p>
+                      <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400">@{user.username}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                       user.branch === 'arcyn_x'
-                        ? 'bg-blue-500/20 text-blue-400'
+                        ? 'bg-ios-blue/20 text-ios-blue'
                         : user.branch === 'modulex'
-                        ? 'bg-green-500/20 text-green-400'
-                        : 'bg-purple-500/20 text-purple-400'
+                        ? 'bg-ios-green/20 text-ios-green'
+                        : 'bg-ios-purple/20 text-ios-purple'
                     }`}>
                       {user.branch.replace('_', '.')}
                     </span>
@@ -355,7 +355,7 @@ export default function LeaderboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <h2 className="text-2xl font-display font-bold text-ios-gray-900 mb-4">Featured Achievements</h2>
+          <h2 className="text-2xl font-display font-bold text-ios-gray-900 dark:text-white mb-4">Featured Achievements</h2>
           <div className="grid grid-cols-4 gap-4">
             {[
               { icon: Flame, name: 'Week Warrior', color: 'from-red-500 to-orange-500' },

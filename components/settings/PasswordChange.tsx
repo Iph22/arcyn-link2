@@ -55,21 +55,21 @@ export default function PasswordChange() {
   }
 
   return (
-    <div className="bg-arcyn-bg rounded-2xl border border-gold-500/20 p-6">
+    <div className="bg-white rounded-2xl border border-arcyn-border p-6 shadow-ios">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-gold-500/20 rounded-xl flex items-center justify-center">
-          <Lock className="w-5 h-5 text-gold-500" />
+        <div className="w-10 h-10 bg-ios-blue/10 rounded-xl flex items-center justify-center">
+          <Lock className="w-5 h-5 text-ios-blue" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-white">Change Password</h3>
-          <p className="text-sm text-gray-400">Update your password to keep your account secure</p>
+          <h3 className="text-lg font-bold text-ios-gray-900">Change Password</h3>
+          <p className="text-sm text-ios-gray-600">Update your password to keep your account secure</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Current Password */}
         <div>
-          <label className="block text-sm font-medium text-gray-400 mb-2">
+          <label className="block text-sm font-medium text-ios-gray-700 mb-2">
             Current Password
           </label>
           <div className="relative">
@@ -77,14 +77,14 @@ export default function PasswordChange() {
               type={showPasswords.current ? 'text' : 'password'}
               value={formData.currentPassword}
               onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-              className="w-full px-4 py-3 pr-12 bg-arcyn-surface border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white transition-all"
+              className="w-full px-4 py-3 pr-12 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 transition-all shadow-ios-inner"
               placeholder="Enter current password"
               required
             />
             <button
               type="button"
               onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-ios-gray-500 hover:text-ios-gray-900 transition-colors"
             >
               {showPasswords.current ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
@@ -93,7 +93,7 @@ export default function PasswordChange() {
 
         {/* New Password */}
         <div>
-          <label className="block text-sm font-medium text-gray-400 mb-2">
+          <label className="block text-sm font-medium text-ios-gray-700 mb-2">
             New Password
           </label>
           <div className="relative">
@@ -101,24 +101,24 @@ export default function PasswordChange() {
               type={showPasswords.new ? 'text' : 'password'}
               value={formData.newPassword}
               onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-              className="w-full px-4 py-3 pr-12 bg-arcyn-surface border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white transition-all"
+              className="w-full px-4 py-3 pr-12 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 transition-all shadow-ios-inner"
               placeholder="Enter new password"
               required
             />
             <button
               type="button"
               onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-ios-gray-500 hover:text-ios-gray-900 transition-colors"
             >
               {showPasswords.new ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters</p>
+          <p className="text-xs text-ios-gray-500 mt-1">Must be at least 8 characters</p>
         </div>
 
         {/* Confirm Password */}
         <div>
-          <label className="block text-sm font-medium text-gray-400 mb-2">
+          <label className="block text-sm font-medium text-ios-gray-700 mb-2">
             Confirm New Password
           </label>
           <div className="relative">
@@ -126,14 +126,14 @@ export default function PasswordChange() {
               type={showPasswords.confirm ? 'text' : 'password'}
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              className="w-full px-4 py-3 pr-12 bg-arcyn-surface border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white transition-all"
+              className="w-full px-4 py-3 pr-12 bg-white border border-arcyn-border rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 transition-all shadow-ios-inner"
               placeholder="Confirm new password"
               required
             />
             <button
               type="button"
               onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-ios-gray-500 hover:text-ios-gray-900 transition-colors"
             >
               {showPasswords.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
@@ -146,7 +146,7 @@ export default function PasswordChange() {
           whileTap={{ scale: 0.98 }}
           type="submit"
           disabled={loading}
-          className="w-full px-4 py-3 bg-gold-500/20 border border-gold-500/40 rounded-xl text-gold-500 font-semibold hover:bg-gold-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full px-4 py-3 bg-ios-blue text-white font-semibold rounded-xl hover:bg-ios-blue/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-ios-md"
         >
           {loading ? (
             <>

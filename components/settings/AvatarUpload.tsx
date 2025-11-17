@@ -65,7 +65,7 @@ export default function AvatarUpload({ currentAvatarUrl, userId, onUploadComplet
     <div className="flex items-center gap-6">
       {/* Avatar Preview */}
       <div className="relative">
-        <div className="w-24 h-24 rounded-full overflow-hidden bg-arcyn-bg border-2 border-gold-500/20">
+        <div className="w-24 h-24 rounded-full overflow-hidden bg-ios-gray-50 border-2 border-arcyn-border">
           {previewUrl ? (
             <img
               src={previewUrl}
@@ -74,7 +74,7 @@ export default function AvatarUpload({ currentAvatarUrl, userId, onUploadComplet
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <User className="w-12 h-12 text-gray-600" />
+              <User className="w-12 h-12 text-ios-gray-500" />
             </div>
           )}
         </div>
@@ -85,12 +85,12 @@ export default function AvatarUpload({ currentAvatarUrl, userId, onUploadComplet
           whileTap={{ scale: 0.9 }}
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="absolute bottom-0 right-0 w-8 h-8 bg-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-gold-600 transition-colors disabled:opacity-50"
+          className="absolute bottom-0 right-0 w-8 h-8 bg-ios-blue rounded-full flex items-center justify-center shadow-lg hover:bg-ios-blue/90 transition-colors disabled:opacity-50"
         >
           {uploading ? (
-            <Loader2 className="w-4 h-4 text-black animate-spin" />
+            <Loader2 className="w-4 h-4 text-white animate-spin" />
           ) : (
-            <Camera className="w-4 h-4 text-black" />
+            <Camera className="w-4 h-4 text-white" />
           )}
         </motion.button>
 
@@ -105,14 +105,14 @@ export default function AvatarUpload({ currentAvatarUrl, userId, onUploadComplet
 
       {/* Info */}
       <div>
-        <p className="text-sm font-semibold text-white mb-1">Profile Picture</p>
-        <p className="text-xs text-gray-400 mb-2">
+        <p className="text-sm font-semibold text-ios-gray-900 mb-1">Profile Picture</p>
+        <p className="text-xs text-ios-gray-600 mb-2">
           JPG, PNG or GIF. Max size 5MB.
         </p>
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="text-xs text-gold-500 hover:text-gold-400 font-semibold transition-colors disabled:opacity-50"
+          className="text-xs text-ios-blue hover:text-ios-blue/80 font-semibold transition-colors disabled:opacity-50"
         >
           {uploading ? 'Uploading...' : 'Change Avatar'}
         </button>

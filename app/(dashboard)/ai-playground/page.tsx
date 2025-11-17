@@ -97,8 +97,8 @@ export default function AIPlaygroundPage() {
             <Bot className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-display font-bold text-ios-gray-900">AI Playground</h1>
-            <p className="text-sm text-ios-gray-600">Powered by Claude</p>
+            <h1 className="text-xl font-display font-bold text-ios-gray-900 dark:text-white">AI Playground</h1>
+            <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400">Powered by Claude</p>
           </div>
         </div>
 
@@ -130,10 +130,10 @@ export default function AIPlaygroundPage() {
 
         {/* Stats */}
         <div className="mt-6 p-4 glass-card rounded-xl">
-          <p className="text-sm text-ios-gray-600 mb-2">Current Session</p>
+          <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400 mb-2">Current Session</p>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold text-ios-blue">{messages.length}</span>
-            <span className="text-ios-gray-600">messages</span>
+            <span className="text-ios-gray-600 dark:text-ios-gray-400">messages</span>
           </div>
         </div>
       </motion.div>
@@ -143,10 +143,10 @@ export default function AIPlaygroundPage() {
         {/* Header */}
         <div className="h-16 border-b border-arcyn-border flex items-center justify-between px-6 glass">
           <div>
-            <h2 className="text-lg font-semibold text-ios-gray-900">
+            <h2 className="text-lg font-semibold text-ios-gray-900 dark:text-white">
               {modes.find(m => m.id === mode)?.name}
             </h2>
-            <p className="text-xs text-ios-gray-600">
+            <p className="text-xs text-ios-gray-600 dark:text-ios-gray-400">
               {modes.find(m => m.id === mode)?.description}
             </p>
           </div>
@@ -169,10 +169,10 @@ export default function AIPlaygroundPage() {
                   className="w-24 h-24 bg-gradient-to-br from-ios-blue to-ios-blue-light rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-ios-lg">
                   <Bot className="w-12 h-12 text-white" />
                 </motion.div>
-                <h3 className="text-2xl font-display font-bold text-ios-gray-900 mb-2">
+                <h3 className="text-2xl font-display font-bold text-ios-gray-900 dark:text-white mb-2">
                   Start a Conversation
                 </h3>
-                <p className="text-ios-gray-600">
+                <p className="text-ios-gray-600 dark:text-ios-gray-400">
                   {mode === 'chat' && 'Ask me anything! I\'m here to help with your questions.'}
                   {mode === 'code' && 'Paste your code and ask for help, explanations, or improvements.'}
                   {mode === 'document' && 'Paste document text for analysis, insights, and summaries.'}
@@ -194,13 +194,13 @@ export default function AIPlaygroundPage() {
                       className={`max-w-[80%] p-4 rounded-2xl ${
                         message.role === 'user'
                           ? 'bg-ios-blue text-white shadow-ios-md'
-                          : 'glass-card text-ios-gray-900'
+                          : 'glass-card text-ios-gray-900 dark:text-white'
                       }`}
                     >
                       {message.role === 'assistant' && (
                         <div className="flex items-center gap-2 mb-2">
                           <Bot className="w-4 h-4 text-ios-blue" />
-                          <span className="text-xs text-ios-gray-600 font-semibold">Claude AI</span>
+                          <span className="text-xs text-ios-gray-600 dark:text-ios-gray-400 font-semibold">Claude AI</span>
                         </div>
                       )}
                       <p className="whitespace-pre-wrap break-words">{message.content}</p>
@@ -218,7 +218,7 @@ export default function AIPlaygroundPage() {
                   <div className="glass-card p-4 rounded-2xl">
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 text-ios-blue animate-spin" />
-                      <span className="text-sm text-ios-gray-600">Claude is thinking...</span>
+                      <span className="text-sm text-ios-gray-600 dark:text-ios-gray-400">Claude is thinking...</span>
                     </div>
                   </div>
                 </motion.div>

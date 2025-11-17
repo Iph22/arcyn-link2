@@ -59,13 +59,13 @@ export default function ChatPage() {
 
 
   return (
-    <div className="h-screen bg-arcyn-bg flex">
+    <div className="h-screen bg-ios-gray-50 dark:bg-black flex">
       {/* Sidebar */}
-      <div className="w-80 bg-arcyn-surface border-r border-arcyn-border flex flex-col shadow-ios">
+      <div className="w-80 bg-white dark:bg-ios-gray-800 border-r border-arcyn-border dark:border-ios-gray-700 flex flex-col shadow-ios">
         {/* Header */}
         <div className="p-4 border-b border-arcyn-border">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-display font-bold text-ios-gray-900">Channels</h1>
+            <h1 className="text-xl font-display font-bold text-ios-gray-900 dark:text-white">Channels</h1>
             <button
               onClick={() => setShowCreateChannel(true)}
               className="p-2 bg-ios-gray-50 rounded-lg hover:bg-ios-gray-100 transition-colors"
@@ -120,7 +120,7 @@ export default function ChatPage() {
                 >
                   <div className="flex items-center gap-3">
                     <Hash className="w-4 h-4 text-ios-blue" />
-                    <span className="text-ios-gray-900 font-medium">{channel.name}</span>
+                    <span className="text-ios-gray-900 dark:text-white font-medium">{channel.name}</span>
                   </div>
                   {channel.is_private && (
                     <span className="text-xs text-ios-gray-500">🔒</span>
@@ -144,10 +144,10 @@ export default function ChatPage() {
               <div className="w-24 h-24 bg-gradient-to-br from-ios-blue to-ios-blue-light rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-ios-lg">
                 <MessageSquare className="w-12 h-12 text-white" />
               </div>
-              <h2 className="text-2xl font-display font-bold text-ios-gray-900 mb-2">
+              <h2 className="text-2xl font-display font-bold text-ios-gray-900 dark:text-white mb-2">
                 Select a Channel
               </h2>
-              <p className="text-ios-gray-600 max-w-md">
+              <p className="text-ios-gray-600 dark:text-ios-gray-400 max-w-md">
                 Choose a channel from the sidebar to start chatting
               </p>
             </motion.div>
@@ -178,7 +178,7 @@ export default function ChatPage() {
               className="w-full max-w-md glass-card rounded-3xl p-6 shadow-ios-xl"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-display font-bold text-ios-gray-900">Create Channel</h2>
+                <h2 className="text-2xl font-display font-bold text-ios-gray-900 dark:text-white">Create Channel</h2>
                 <button
                   onClick={() => setShowCreateChannel(false)}
                   className="p-2 hover:bg-ios-gray-50 rounded-lg transition-colors"
@@ -189,7 +189,7 @@ export default function ChatPage() {
 
               <form onSubmit={handleCreateChannel} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-ios-gray-600 mb-2">
+                  <label className="block text-sm font-medium text-ios-gray-600 dark:text-ios-gray-400 mb-2">
                     Channel Name *
                   </label>
                   <input
@@ -203,7 +203,7 @@ export default function ChatPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-ios-gray-600 mb-2">
+                  <label className="block text-sm font-medium text-ios-gray-600 dark:text-ios-gray-400 mb-2">
                     Description
                   </label>
                   <textarea
@@ -216,7 +216,7 @@ export default function ChatPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-ios-gray-600 mb-2">
+                  <label className="block text-sm font-medium text-ios-gray-600 dark:text-ios-gray-400 mb-2">
                     Branch (Optional)
                   </label>
                   <select

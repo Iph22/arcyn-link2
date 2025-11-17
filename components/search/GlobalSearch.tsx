@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, Hash, Users, FileText, MessageSquare, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
@@ -8,6 +9,7 @@ import { useRouter } from 'next/navigation'
 
 export default function GlobalSearch() {
   const [isOpen, setIsOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<any>({
     channels: [],
@@ -18,6 +20,10 @@ export default function GlobalSearch() {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<'all' | 'channels' | 'users' | 'messages' | 'documents'>('all')
   const router = useRouter()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -126,41 +132,24 @@ export default function GlobalSearch() {
     documents: activeTab === 'documents' ? results.documents : [],
   }
 
-  return (
-    <>
-      {/* Search Button */}
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-arcyn-border rounded-xl hover:border-ios-blue/40 transition-all text-ios-gray-600 hover:text-ios-gray-900 shadow-ios-inner"
-      >
-        <Search className="w-4 h-4" />
-        <span className="text-sm">Search...</span>
-        <kbd className="px-2 py-0.5 bg-ios-gray-50 border border-arcyn-border rounded text-xs text-ios-gray-600">⌘K</kbd>
-      </motion.button>
-
-      {/* Search Modal */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-              onClick={() => setIsOpen(false)}
-            />
-
-            {/* Modal */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: -20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -20 }}
-              className="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-white border border-arcyn-border rounded-3xl shadow-ios-xl overflow-hidden z-50"
-              onClick={(e) => e.stopPropagation()}
-            >
+  const modalContent = (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-start justify-center pt-20 px-4"
+          onClick={() => setIsOpen(false)}
+        >
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            className="w-full max-w-2xl bg-white border border-arcyn-border rounded-3xl shadow-ios-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
               {/* Search Input */}
               <div className="p-4 border-b border-arcyn-border">
                 <div className="flex items-center gap-3">
@@ -333,10 +322,28 @@ export default function GlobalSearch() {
                   </div>
                 )}
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+
+  return (
+    <>
+      {/* Search Button */}
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => setIsOpen(true)}
+        className="flex items-center gap-2 px-4 py-2 bg-white border border-arcyn-border rounded-xl hover:border-ios-blue/40 transition-all text-ios-gray-600 hover:text-ios-gray-900 shadow-ios-inner"
+      >
+        <Search className="w-4 h-4" />
+        <span className="text-sm">Search...</span>
+        <kbd className="px-2 py-0.5 bg-ios-gray-50 border border-arcyn-border rounded text-xs text-ios-gray-600">⌘K</kbd>
+      </motion.button>
+
+      {/* Render modal in portal to escape parent container constraints */}
+      {mounted && typeof window !== 'undefined' && createPortal(modalContent, document.body)}
     </>
   )
 }

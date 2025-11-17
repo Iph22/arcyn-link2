@@ -84,8 +84,8 @@ export default function ChannelsPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="text-4xl font-display font-bold text-white mb-2">Channels</h1>
-            <p className="text-gray-400">Manage your communication channels</p>
+            <h1 className="text-4xl font-display font-bold text-ios-gray-900 dark:text-white mb-2">Channels</h1>
+            <p className="text-ios-gray-600 dark:text-ios-gray-400">Manage your communication channels</p>
           </motion.div>
 
           <motion.button
@@ -94,7 +94,7 @@ export default function ChannelsPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowCreateModal(true)}
-            className="px-6 py-3 bg-gradient-to-r from-gold-500 to-gold-600 text-black font-bold rounded-xl hover:shadow-gold-glow transition-all flex items-center gap-2"
+            className="px-6 py-3 bg-ios-blue text-white font-bold rounded-xl hover:bg-ios-blue/90 shadow-ios-md transition-all flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
             Create Channel
@@ -108,13 +108,13 @@ export default function ChannelsPage() {
           transition={{ delay: 0.1 }}
           className="relative"
         >
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ios-gray-500" />
           <input
             type="text"
             placeholder="Search channels..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-arcyn-surface border border-gold-500/20 rounded-xl focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white placeholder-gray-500 transition-all"
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-ios-gray-800 border border-arcyn-border dark:border-ios-gray-700 rounded-xl focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 dark:text-white placeholder-ios-gray-400 transition-all shadow-ios-inner"
           />
         </motion.div>
       </div>
@@ -123,15 +123,15 @@ export default function ChannelsPage() {
       <div className="max-w-6xl mx-auto">
         {filteredChannels.length === 0 ? (
           <div className="text-center py-16">
-            <Hash className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">No channels found</h3>
-            <p className="text-gray-400 mb-6">
+            <Hash className="w-16 h-16 text-ios-gray-500 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-ios-gray-900 dark:text-white mb-2">No channels found</h3>
+            <p className="text-ios-gray-600 dark:text-ios-gray-400 mb-6">
               {searchQuery ? 'Try a different search term' : 'Create your first channel to get started'}
             </p>
             {!searchQuery && (
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="px-6 py-3 bg-gold-500/20 text-gold-500 font-semibold rounded-xl hover:bg-gold-500/30 transition-all"
+                className="px-6 py-3 bg-ios-blue/10 dark:bg-ios-blue/20 text-ios-blue font-semibold rounded-xl hover:bg-ios-blue/20 dark:hover:bg-ios-blue/30 transition-all border border-ios-blue/20"
               >
                 Create Channel
               </button>
@@ -146,7 +146,7 @@ export default function ChannelsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 whileHover={{ scale: 1.02, y: -5 }}
-                className="bg-arcyn-surface rounded-2xl border border-gold-500/20 p-6 hover:border-gold-500/40 transition-all cursor-pointer"
+                className="bg-white dark:bg-ios-gray-800 rounded-2xl border border-arcyn-border dark:border-ios-gray-700 p-6 hover:border-ios-blue/40 transition-all cursor-pointer shadow-ios"
               >
                 {/* Channel Icon */}
                 <div className={`w-16 h-16 bg-gradient-to-br ${getBranchColor(channel.branch)} rounded-xl flex items-center justify-center mb-4 shadow-lg`}>
@@ -160,13 +160,13 @@ export default function ChannelsPage() {
                 {/* Channel Info */}
                 <div className="mb-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-lg font-bold text-white">{channel.name}</h3>
+                    <h3 className="text-lg font-bold text-ios-gray-900 dark:text-white">{channel.name}</h3>
                     {channel.is_private && (
-                      <Lock className="w-4 h-4 text-gray-400" />
+                      <Lock className="w-4 h-4 text-ios-gray-500" />
                     )}
                   </div>
                   {channel.description && (
-                    <p className="text-sm text-gray-400 line-clamp-2">{channel.description}</p>
+                    <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400 line-clamp-2">{channel.description}</p>
                   )}
                 </div>
 
@@ -185,9 +185,9 @@ export default function ChannelsPage() {
                   )}
                   <button 
                     onClick={() => setSelectedChannel(channel)}
-                    className="p-2 hover:bg-gold-500/20 rounded-lg transition-colors"
+                    className="p-2 hover:bg-ios-gray-50 dark:hover:bg-ios-gray-700 rounded-lg transition-colors"
                   >
-                    <Settings className="w-4 h-4 text-gray-400" />
+                    <Settings className="w-4 h-4 text-ios-gray-500" />
                   </button>
                 </div>
               </motion.div>

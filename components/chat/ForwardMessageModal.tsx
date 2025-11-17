@@ -47,37 +47,37 @@ export default function ForwardMessageModal({ messageId, onClose }: ForwardMessa
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className="bg-arcyn-surface rounded-3xl border border-gold-500/20 p-6 max-w-md w-full max-h-[80vh] flex flex-col"
+          className="bg-white rounded-3xl border border-arcyn-border p-6 max-w-md w-full max-h-[80vh] flex flex-col shadow-ios-xl"
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-display font-bold text-white">Forward Message</h2>
+            <h2 className="text-xl font-display font-bold text-ios-gray-900">Forward Message</h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-arcyn-bg rounded-lg transition-colors"
+              className="p-2 hover:bg-ios-gray-50 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-gray-400" />
+              <X className="w-5 h-5 text-ios-gray-500" />
             </button>
           </div>
 
           {/* Search */}
           <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ios-gray-500" />
             <input
               type="text"
               placeholder="Search channels..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-arcyn-bg border border-gold-500/20 rounded-lg focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 text-white placeholder-gray-500 text-sm transition-all"
+              className="w-full pl-10 pr-4 py-2 bg-white border border-arcyn-border rounded-lg focus:border-ios-blue focus:ring-2 focus:ring-ios-blue/20 text-ios-gray-900 placeholder-ios-gray-400 text-sm transition-all shadow-ios-inner"
             />
           </div>
 
           {/* Channel List */}
           <div className="flex-1 overflow-y-auto mb-4 space-y-2">
             {loading ? (
-              <div className="text-center text-gray-400 py-8">Loading channels...</div>
+              <div className="text-center text-ios-gray-600 py-8">Loading channels...</div>
             ) : filteredChannels.length === 0 ? (
-              <div className="text-center text-gray-400 py-8">
+              <div className="text-center text-ios-gray-600 py-8">
                 {searchQuery ? 'No channels found' : 'No channels available'}
               </div>
             ) : (
@@ -89,22 +89,22 @@ export default function ForwardMessageModal({ messageId, onClose }: ForwardMessa
                   whileTap={{ scale: 0.98 }}
                   className={`w-full p-3 rounded-xl border transition-all text-left ${
                     selectedChannelId === channel.id
-                      ? 'bg-gold-500/20 border-gold-500 text-white'
-                      : 'bg-arcyn-bg border-gold-500/20 text-gray-300 hover:border-gold-500/40'
+                      ? 'bg-ios-blue/10 border-ios-blue text-ios-gray-900'
+                      : 'bg-ios-gray-50 border-arcyn-border text-ios-gray-700 hover:border-ios-blue/40'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       selectedChannelId === channel.id
-                        ? 'bg-gold-500/30'
-                        : 'bg-arcyn-surface'
+                        ? 'bg-ios-blue/20'
+                        : 'bg-white'
                     }`}>
                       <Hash className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold truncate">{channel.name}</p>
                       {channel.description && (
-                        <p className="text-xs text-gray-400 truncate">{channel.description}</p>
+                        <p className="text-xs text-ios-gray-600 truncate">{channel.description}</p>
                       )}
                     </div>
                   </div>
@@ -117,14 +117,14 @@ export default function ForwardMessageModal({ messageId, onClose }: ForwardMessa
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-arcyn-bg border border-gold-500/20 rounded-xl text-gray-400 font-semibold hover:text-white hover:border-gold-500/40 transition-all"
+              className="flex-1 px-4 py-3 bg-white border border-arcyn-border rounded-xl text-ios-gray-700 font-semibold hover:bg-ios-gray-50 transition-all shadow-ios-inner"
             >
               Cancel
             </button>
             <button
               onClick={handleForward}
               disabled={!selectedChannelId || forwarding}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-gold-500 to-gold-600 text-black font-bold rounded-xl hover:shadow-gold-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-ios-blue text-white font-bold rounded-xl hover:bg-ios-blue/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-ios-md"
             >
               {forwarding ? (
                 <>

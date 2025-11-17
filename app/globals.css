@@ -37,26 +37,35 @@
   }
 
   .dark {
-    /* Keep dark mode for potential future use */
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
+    /* iOS Dark Mode */
+    --background: 0 0% 0%; /* #000000 */
+    --foreground: 0 0% 98%; /* #FAFAFA */
+    --card: 0 0% 8%; /* #141414 */
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
+    --popover: 0 0% 8%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    --primary: 211 100% 50%; /* iOS Blue #007AFF */
+    --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;
     --muted-foreground: 0 0% 63.9%;
     --accent: 0 0% 14.9%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
+    --destructive: 4 90% 58%; /* iOS Red #FF3B30 */
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 18%; /* #2E2E2E */
     --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --ring: 211 100% 50%;
+    
+    /* iOS-specific colors for dark mode */
+    --ios-blue: 211 100% 50%;
+    --ios-red: 4 90% 58%;
+    --ios-green: 142 76% 36%;
+    --ios-orange: 28 100% 50%;
+    --ios-gray: 0 0% 55.7%;
+    --ios-gray-light: 0 0% 18%;
+    --ios-gray-lighter: 0 0% 8%;
   }
 }
 
@@ -79,13 +88,25 @@
   background: #F5F5F7;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #141414;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #C7C7CC;
   border-radius: 4px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #2E2E2E;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #8E8E93;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #48484A;
 }
 
 /* iOS Glassmorphism utility */
@@ -103,6 +124,12 @@
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 0.5px solid rgba(229, 229, 234, 0.6);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.dark .glass-card {
+  background: rgba(20, 20, 20, 0.95);
+  border: 0.5px solid rgba(46, 46, 46, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* Subtle accent gradient text */

@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { User, Bell, Lock, Palette, Globe, Save, Loader2, MessageSquare, Shield } from 'lucide-react'
-import { getCurrentUser } from '@/lib/supabase/auth'
+import { User, Bell, Lock, Palette, Globe, Save, Loader2, MessageSquare, Shield, Monitor } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { sanitizeUserInput } from '@/lib/utils/sanitize'
 import { isValidUsername } from '@/lib/utils/validation'
@@ -11,12 +10,15 @@ import toast from 'react-hot-toast'
 import AvatarUpload from '@/components/settings/AvatarUpload'
 import PasswordChange from '@/components/settings/PasswordChange'
 import DeleteAccount from '@/components/settings/DeleteAccount'
+import { useTheme, type Theme } from '@/lib/hooks/useTheme'
+import { useProfile } from '@/lib/contexts/ProfileContext'
 
 type Tab = 'account' | 'notifications' | 'privacy' | 'appearance' | 'language' | 'security'
 
 export default function SettingsPage() {
+  const { theme, setTheme: updateTheme, mounted: themeMounted } = useTheme()
+  const { profile, refreshProfile } = useProfile()
   const [activeTab, setActiveTab] = useState<Tab>('account')
-  const [profile, setProfile] = useState<any>(null)
   const [settings, setSettings] = useState({
     // Account
     fullName: '',
@@ -42,51 +44,55 @@ export default function SettingsPage() {
     showReadReceipts: true,
     
     // Appearance
-    theme: 'dark',
+    theme: 'system' as Theme,
     language: 'en',
   })
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
 
+  // Sync theme from hook to settings
   useEffect(() => {
-    loadProfile()
-  }, [])
-
-  async function loadProfile() {
-    try {
-      const user = await getCurrentUser()
-      if (!user) return
-
-      setProfile(user)
-      setSettings({
-        fullName: user.full_name || '',
-        username: user.username || '',
-        email: user.email || '',
-        bio: user.bio || '',
-        department: user.department || '',
-        position: user.position || '',
-        statusMessage: user.status_message || '',
-        notificationsEnabled: user.notifications_enabled ?? true,
-        emailNotifications: user.email_notifications ?? true,
-        pushNotifications: user.push_notifications ?? true,
-        messageNotifications: user.message_notifications ?? true,
-        callNotifications: user.call_notifications ?? true,
-        mentionNotifications: user.mention_notifications ?? true,
-        profileVisibility: user.profile_visibility || 'everyone',
-        whoCanMessage: user.who_can_message || 'everyone',
-        showOnlineStatus: user.show_online_status ?? true,
-        showReadReceipts: user.show_read_receipts ?? true,
-        theme: user.theme || 'dark',
-        language: user.language || 'en',
-      })
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error loading profile:', error)
-      }
-    } finally {
-      setLoading(false)
+    if (themeMounted) {
+      setSettings(prev => ({ ...prev, theme }))
     }
-  }
+  }, [theme, themeMounted])
+
+  useEffect(() => {
+    if (profile) {
+      // Load theme from user profile or localStorage (only on client)
+      let savedTheme: Theme = 'system'
+      if (typeof window !== 'undefined') {
+        savedTheme = (profile.theme || localStorage.getItem('theme') || 'system') as Theme
+        if (['light', 'dark', 'system'].includes(savedTheme)) {
+          updateTheme(savedTheme)
+        }
+      } else if (profile.theme && ['light', 'dark', 'system'].includes(profile.theme)) {
+        savedTheme = profile.theme as Theme
+      }
+      
+      setSettings({
+        fullName: profile.full_name || '',
+        username: profile.username || '',
+        email: profile.email || '',
+        bio: profile.bio || '',
+        department: profile.department || '',
+        position: profile.position || '',
+        statusMessage: profile.status_message || '',
+        notificationsEnabled: profile.notifications_enabled ?? true,
+        emailNotifications: profile.email_notifications ?? true,
+        pushNotifications: profile.push_notifications ?? true,
+        messageNotifications: profile.message_notifications ?? true,
+        callNotifications: profile.call_notifications ?? true,
+        mentionNotifications: profile.mention_notifications ?? true,
+        profileVisibility: profile.profile_visibility || 'everyone',
+        whoCanMessage: profile.who_can_message || 'everyone',
+        showOnlineStatus: profile.show_online_status ?? true,
+        showReadReceipts: profile.show_read_receipts ?? true,
+        theme: savedTheme,
+        language: profile.language || 'en',
+      })
+    }
+  }, [profile, updateTheme])
 
   async function saveSettings() {
     // Validate username if changed
@@ -100,9 +106,11 @@ export default function SettingsPage() {
 
     setSaving(true)
     try {
-      const user = await getCurrentUser()
-      if (!user) return
+      if (!profile) return
 
+      // Update theme in both localStorage and database
+      updateTheme(settings.theme)
+      
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -125,13 +133,13 @@ export default function SettingsPage() {
           theme: settings.theme,
           language: settings.language,
         })
-        .eq('id', user.id)
+        .eq('id', profile.id)
 
       if (error) throw error
 
       toast.success('Settings saved successfully!')
       // Reload profile to reflect changes
-      loadProfile()
+      await refreshProfile()
     } catch (error: any) {
       toast.error(error.message || 'Failed to save settings')
     } finally {
@@ -169,8 +177,8 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-display font-bold text-ios-gray-900 mb-2">Settings</h1>
-          <p className="text-ios-gray-600">Manage your account and preferences</p>
+          <h1 className="text-4xl font-display font-bold text-ios-gray-900 dark:text-white mb-2">Settings</h1>
+          <p className="text-ios-gray-600 dark:text-ios-gray-400">Manage your account and preferences</p>
         </motion.div>
 
         <div className="flex gap-6">
@@ -178,7 +186,7 @@ export default function SettingsPage() {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="w-64 bg-arcyn-surface rounded-2xl border border-arcyn-border p-4 shadow-ios"
+            className="w-64 bg-white dark:bg-ios-gray-800 rounded-2xl border border-arcyn-border dark:border-ios-gray-700 p-4 shadow-ios"
           >
             <div className="space-y-1">
               {tabs.map((tab) => (
@@ -188,7 +196,7 @@ export default function SettingsPage() {
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     activeTab === tab.id
                       ? 'bg-ios-blue/10 text-ios-blue border border-ios-blue/20'
-                      : 'text-ios-gray-600 hover:text-ios-gray-900 hover:bg-arcyn-bg'
+                      : 'text-ios-gray-600 dark:text-ios-gray-400 hover:text-ios-gray-900 dark:hover:text-white hover:bg-ios-gray-50 dark:hover:bg-ios-gray-700'
                   }`}
                 >
                   <tab.icon className="w-5 h-5" />
@@ -202,20 +210,20 @@ export default function SettingsPage() {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex-1 bg-arcyn-surface rounded-2xl border border-gold-500/20 p-8"
+            className="flex-1 bg-white dark:bg-ios-gray-800 rounded-2xl border border-arcyn-border dark:border-ios-gray-700 p-8 shadow-ios"
           >
             {/* Account Settings */}
             {activeTab === 'account' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-ios-gray-900 mb-6">Account Settings</h2>
+                <h2 className="text-2xl font-bold text-ios-gray-900 dark:text-white mb-6">Account Settings</h2>
 
                 {/* Avatar Upload */}
                 {profile && (
                   <AvatarUpload
                     currentAvatarUrl={profile.avatar_url}
                     userId={profile.id}
-                    onUploadComplete={(url) => {
-                      setProfile({ ...profile, avatar_url: url })
+                    onUploadComplete={async (url) => {
+                      await refreshProfile()
                     }}
                   />
                 )}
@@ -318,7 +326,7 @@ export default function SettingsPage() {
             {/* Security Settings */}
             {activeTab === 'security' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-ios-gray-900 mb-6">Security Settings</h2>
+                <h2 className="text-2xl font-bold text-ios-gray-900 dark:text-white mb-6">Security Settings</h2>
 
                 {/* Password Change */}
                 <PasswordChange />
@@ -333,7 +341,7 @@ export default function SettingsPage() {
             {/* Notification Settings */}
             {activeTab === 'notifications' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-ios-gray-900 mb-6">Notification Settings</h2>
+                <h2 className="text-2xl font-bold text-ios-gray-900 dark:text-white mb-6">Notification Settings</h2>
 
                 <div className="space-y-4">
                   <ToggleSetting
@@ -388,7 +396,7 @@ export default function SettingsPage() {
             {/* Privacy Settings */}
             {activeTab === 'privacy' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-ios-gray-900 mb-6">Privacy Settings</h2>
+                <h2 className="text-2xl font-bold text-ios-gray-900 dark:text-white mb-6">Privacy Settings</h2>
 
                 {/* Profile Visibility */}
                 <div>
@@ -406,8 +414,8 @@ export default function SettingsPage() {
                         className="w-4 h-4 text-ios-blue"
                       />
                       <div>
-                        <p className="font-semibold text-ios-gray-900">Everyone</p>
-                        <p className="text-xs text-ios-gray-600">Anyone can view your profile</p>
+                        <p className="font-semibold text-ios-gray-900 dark:text-white">Everyone</p>
+                        <p className="text-xs text-ios-gray-600 dark:text-ios-gray-400">Anyone can view your profile</p>
                       </div>
                     </label>
                     <label className="flex items-center gap-3 p-4 bg-white rounded-xl border border-arcyn-border cursor-pointer hover:border-ios-blue/40 transition-all shadow-ios-inner">
@@ -420,8 +428,8 @@ export default function SettingsPage() {
                         className="w-4 h-4 text-ios-blue"
                       />
                       <div>
-                        <p className="font-semibold text-ios-gray-900">Team Only</p>
-                        <p className="text-xs text-ios-gray-600">Only members of your branch can view</p>
+                        <p className="font-semibold text-ios-gray-900 dark:text-white">Team Only</p>
+                        <p className="text-xs text-ios-gray-600 dark:text-ios-gray-400">Only members of your branch can view</p>
                       </div>
                     </label>
                     <label className="flex items-center gap-3 p-4 bg-white rounded-xl border border-arcyn-border cursor-pointer hover:border-ios-blue/40 transition-all shadow-ios-inner">
@@ -434,8 +442,8 @@ export default function SettingsPage() {
                         className="w-4 h-4 text-ios-blue"
                       />
                       <div>
-                        <p className="font-semibold text-ios-gray-900">Private</p>
-                        <p className="text-xs text-ios-gray-600">Only you can view your profile</p>
+                        <p className="font-semibold text-ios-gray-900 dark:text-white">Private</p>
+                        <p className="text-xs text-ios-gray-600 dark:text-ios-gray-400">Only you can view your profile</p>
                       </div>
                     </label>
                   </div>
@@ -457,8 +465,8 @@ export default function SettingsPage() {
                         className="w-4 h-4 text-ios-blue"
                       />
                       <div>
-                        <p className="font-semibold text-ios-gray-900">Everyone</p>
-                        <p className="text-xs text-ios-gray-600">Anyone can message you</p>
+                        <p className="font-semibold text-ios-gray-900 dark:text-white">Everyone</p>
+                        <p className="text-xs text-ios-gray-600 dark:text-ios-gray-400">Anyone can message you</p>
                       </div>
                     </label>
                     <label className="flex items-center gap-3 p-4 bg-white rounded-xl border border-arcyn-border cursor-pointer hover:border-ios-blue/40 transition-all shadow-ios-inner">
@@ -471,8 +479,8 @@ export default function SettingsPage() {
                         className="w-4 h-4 text-ios-blue"
                       />
                       <div>
-                        <p className="font-semibold text-ios-gray-900">Team Only</p>
-                        <p className="text-xs text-ios-gray-600">Only team members can message you</p>
+                        <p className="font-semibold text-ios-gray-900 dark:text-white">Team Only</p>
+                        <p className="text-xs text-ios-gray-600 dark:text-ios-gray-400">Only team members can message you</p>
                       </div>
                     </label>
                     <label className="flex items-center gap-3 p-4 bg-white rounded-xl border border-arcyn-border cursor-pointer hover:border-ios-blue/40 transition-all shadow-ios-inner">
@@ -485,8 +493,8 @@ export default function SettingsPage() {
                         className="w-4 h-4 text-ios-blue"
                       />
                       <div>
-                        <p className="font-semibold text-ios-gray-900">No One</p>
-                        <p className="text-xs text-ios-gray-600">Disable direct messages</p>
+                        <p className="font-semibold text-ios-gray-900 dark:text-white">No One</p>
+                        <p className="text-xs text-ios-gray-600 dark:text-ios-gray-400">Disable direct messages</p>
                       </div>
                     </label>
                   </div>
@@ -514,38 +522,60 @@ export default function SettingsPage() {
             {/* Appearance Settings */}
             {activeTab === 'appearance' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-ios-gray-900 mb-6">Appearance</h2>
+                <h2 className="text-2xl font-bold text-ios-gray-900 dark:text-white mb-6">Appearance</h2>
 
                 <div>
-                  <label className="block text-sm font-medium text-ios-gray-700 mb-3">Theme</label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      onClick={() => setSettings({ ...settings, theme: 'dark' })}
-                      className={`p-4 rounded-xl border-2 transition-all ${
-                        settings.theme === 'dark'
-                          ? 'border-ios-blue bg-ios-blue/10'
-                          : 'border-arcyn-border hover:border-ios-blue/40'
-                      }`}
-                    >
-                      <div className="w-full h-24 bg-ios-gray-900 rounded-lg mb-3" />
-                      <p className="font-semibold text-ios-gray-900">Dark</p>
-                    </button>
-
+                  <label className="block text-sm font-medium text-ios-gray-700 dark:text-ios-gray-300 mb-3">Theme</label>
+                  <div className="grid grid-cols-3 gap-4">
                     <button
                       onClick={() => setSettings({ ...settings, theme: 'light' })}
                       className={`p-4 rounded-xl border-2 transition-all ${
                         settings.theme === 'light'
-                          ? 'border-ios-blue bg-ios-blue/10'
-                          : 'border-arcyn-border hover:border-ios-blue/40'
+                          ? 'border-ios-blue bg-ios-blue/10 dark:bg-ios-blue/20'
+                          : 'border-arcyn-border dark:border-ios-gray-700 hover:border-ios-blue/40'
                       }`}
                       aria-label="Light theme"
                       aria-pressed={settings.theme === 'light'}
                     >
-                      <div className="w-full h-24 bg-ios-gray-50 rounded-lg mb-3" />
-                      <p className="font-semibold text-ios-gray-900">Light</p>
-                      <p className="text-xs text-ios-gray-500 mt-1">Coming soon</p>
+                      <div className="w-full h-24 bg-gradient-to-br from-ios-gray-50 to-white rounded-lg mb-3 border border-arcyn-border" />
+                      <p className="font-semibold text-ios-gray-900 dark:text-white">Light</p>
+                    </button>
+
+                    <button
+                      onClick={() => setSettings({ ...settings, theme: 'dark' })}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        settings.theme === 'dark'
+                          ? 'border-ios-blue bg-ios-blue/10 dark:bg-ios-blue/20'
+                          : 'border-arcyn-border dark:border-ios-gray-700 hover:border-ios-blue/40'
+                      }`}
+                      aria-label="Dark theme"
+                      aria-pressed={settings.theme === 'dark'}
+                    >
+                      <div className="w-full h-24 bg-gradient-to-br from-ios-gray-900 to-black rounded-lg mb-3" />
+                      <p className="font-semibold text-ios-gray-900 dark:text-white">Dark</p>
+                    </button>
+
+                    <button
+                      onClick={() => setSettings({ ...settings, theme: 'system' })}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        settings.theme === 'system'
+                          ? 'border-ios-blue bg-ios-blue/10 dark:bg-ios-blue/20'
+                          : 'border-arcyn-border dark:border-ios-gray-700 hover:border-ios-blue/40'
+                      }`}
+                      aria-label="System theme"
+                      aria-pressed={settings.theme === 'system'}
+                    >
+                      <div className="w-full h-24 bg-gradient-to-br from-ios-gray-50 via-ios-gray-400 to-ios-gray-900 rounded-lg mb-3 border border-arcyn-border dark:border-ios-gray-700" />
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Monitor className="w-4 h-4 text-ios-gray-600 dark:text-ios-gray-400" />
+                        <p className="font-semibold text-ios-gray-900 dark:text-white">System</p>
+                      </div>
+                      <p className="text-xs text-ios-gray-500 dark:text-ios-gray-400">Match system</p>
                     </button>
                   </div>
+                  {!themeMounted && (
+                    <p className="text-xs text-ios-gray-500 dark:text-ios-gray-400 mt-2">Loading theme...</p>
+                  )}
                 </div>
               </div>
             )}
@@ -553,7 +583,7 @@ export default function SettingsPage() {
             {/* Language Settings */}
             {activeTab === 'language' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-ios-gray-900 mb-6">Language & Region</h2>
+                <h2 className="text-2xl font-bold text-ios-gray-900 dark:text-white mb-6">Language & Region</h2>
 
                 <div>
                   <label className="block text-sm font-medium text-ios-gray-700 mb-2">Language</label>
@@ -609,8 +639,8 @@ function ToggleSetting({ label, description, checked, onChange }: {
   return (
     <div className="flex items-center justify-between py-3">
       <div>
-        <p className="font-semibold text-ios-gray-900">{label}</p>
-        <p className="text-sm text-ios-gray-600">{description}</p>
+        <p className="font-semibold text-ios-gray-900 dark:text-white">{label}</p>
+        <p className="text-sm text-ios-gray-600 dark:text-ios-gray-400">{description}</p>
       </div>
       <button
         onClick={() => onChange(!checked)}
